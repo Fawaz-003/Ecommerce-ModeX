@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { Mail, Lock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Mail, Lock, Users } from "lucide-react";
 import { toast } from "react-toastify";
 
-const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const navigate = useNavigate();
+const Register = () => {
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,38 +13,29 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/login", {
+      const res = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      if (!res.ok) throw new Error(data.message || "Registration failed");
 
-      localStorage.setItem("user-token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      console.log(data);
       toast.success(data.message, {
         position: "top-right",
         style: { margin: "50px" },
       });
 
-      setForm({ email: "", password: "" });
+      setForm({ name: "", email: "", password: "" });
 
-      if (data.user.role === 1) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
     } catch (err) {
       toast.error(err.message, {
         position: "top-right",
         style: { margin: "50px" },
       });
 
-      setForm({ email: "", password: "" });
+      setForm({ name: "", email: "", password: "" });
     }
   };
 
@@ -57,19 +46,29 @@ const Login = () => {
           Welcome You
         </h1>
         <p className="text-s text-center mb-2 text-gray-700">
-          Login to your account to continue shopping...
+          Register your account to start shopping...
         </p>
-        <h2 className="text-xl font-bold text-center mb-8 text-gray-900">
-          Login
-        </h2>
+        <h2 className="text-lg font-bold text-center mb-6">Create Account</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center">
+            <Users className="mr-5 text-gray-800" />
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 mb-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <div className="flex items-center">
             <Mail className="mr-5 text-gray-800" />
             <input
               type="email"
               name="email"
-              placeholder="Enter Your Email"
+              placeholder="Email"
               value={form.email}
               onChange={handleChange}
               required
@@ -81,7 +80,7 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="Enter Password"
+              placeholder="Password"
               value={form.password}
               onChange={handleChange}
               required
@@ -94,15 +93,15 @@ const Login = () => {
               type="submit"
               className="w-[50%] bg-purple-800 text-lg my-2 text-white py-2 rounded-lg hover:bg-purple-700 hover:cursor-pointer transition"
             >
-              Login
+              Register
             </button>
           </div>
         </form>
 
         <p className="text-sm text-center mt-2">
-          Don’t have an account?{" "}
-          <a href="/register" className="text-blue-600 hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-600 hover:underline">
+            Login
           </a>
         </p>
       </div>
@@ -110,4 +109,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
