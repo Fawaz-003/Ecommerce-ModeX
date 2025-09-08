@@ -9,12 +9,14 @@ import Navbar from "./Layout/Navbar";
 import Footer from "./Layout/Footer";
 import WishList from "./Pages/WishList";
 import Register from "./Pages/Users/Register";
-import AdminRoute from "./Components/AdminRoute";
+import Profile from "./Pages/Users/Profile";
+import AdminRoute from "./Routes/AdminRoute";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import AdminProducts from "./Pages/Admin/AdminProducts";
 import AdminOrders from "./Pages/Admin/AdminOrders";
 import AdminUsers from "./Pages/Admin/AdminUsers";
 import { ToastContainer } from "react-toastify";
+import UserRoute from "./Routes/UersRoute";
 
 const App = () => {
   return (
@@ -30,6 +32,16 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/wishlist" element={<WishList />} />
+        <Route
+          path="/profile"
+          element={
+            <UserRoute>
+              <Profile />
+            </UserRoute>
+          }
+        >
+          {/* User function routes to be added */}
+        </Route>
         <Route
           path="/admin/dashboard"
           element={

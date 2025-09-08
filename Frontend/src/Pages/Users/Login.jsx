@@ -38,7 +38,7 @@ const Login = () => {
       if (data.user.role === 1) {
         navigate("/admin/dashboard");
       } else {
-        navigate("/");
+        navigate("/profile");
       }
     } catch (err) {
       toast.error(err.message, {
