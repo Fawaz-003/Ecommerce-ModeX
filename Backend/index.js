@@ -12,14 +12,24 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 connectCloudinary();
 
-app.use(cors({
-  origin: [
-    "http://localhost:5173",   // for local frontend dev
-    "https://ecommerce-mode-x.vercel.app" // your deployed frontend
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
+const allowedOrigins = [
+  "https://ecommerce-mode-x.vercel.app", 
+  "http://localhost:5173"               
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
