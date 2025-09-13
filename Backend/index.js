@@ -37,6 +37,10 @@ app.use('/api/users', userRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/products', productRouter);
 
+app.get('/ping', (req, res) => {
+  res.json({ message: 'Server awake' });
+});
+
 app.get('/', (req, res) => { 
     res.send("Hello i am from backend");
 });

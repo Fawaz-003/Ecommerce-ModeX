@@ -17,8 +17,16 @@ import AdminOrders from "./Pages/Admin/AdminOrders";
 import AdminUsers from "./Pages/Admin/AdminUsers";
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
+import { useEffect } from "react";
 
 const App = () => {
+  useEffect(() => {
+    // Pre-warm the server when app loads
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/ping`)
+      .then(() => console.log("Backend pre-warmed"))
+      .catch((err) => console.log("Pre-warm failed:", err));
+  }, []);
+
   return (
     <div>
       <Navbar />

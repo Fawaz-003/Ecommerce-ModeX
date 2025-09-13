@@ -14,7 +14,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); 
+    setLoading(true); // start loading
 
     try {
       const res = await fetch(
@@ -53,7 +53,7 @@ const Login = () => {
       });
       setForm({ email: "", password: "" });
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
