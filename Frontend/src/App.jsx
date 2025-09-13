@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import Collections from "./Pages/Collections";
@@ -18,8 +18,14 @@ import AdminUsers from "./Pages/Admin/AdminUsers";
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useEffect } from "react";
+import AdminMenu from "./Pages/Admin/Components/AdminMenu";
 
 const App = () => {
+  const location = useLocation();
+
+  // All paths that should NOT show Navbar and Footer
+  const hideNavAndFooter = location.pathname.startsWith("/admin");
+
   useEffect(() => {
     // Pre-warm the server when app loads
     fetch(`${import.meta.env.VITE_BACKEND_URL}/ping`)
@@ -29,7 +35,8 @@ const App = () => {
 
   return (
     <div>
-      <Navbar />
+      {/* Show Navbar only if NOT in admin area */}
+      {!hideNavAndFooter && <Navbar />}
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -47,23 +54,23 @@ const App = () => {
               <Profile />
             </UserRoute>
           }
-        >
-          {/* User function routes to be added */}
-        </Route>
+        />
+
         <Route
-          path="/admin/dashboard"
+          path="/admin"
           element={
             <AdminRoute>
-              <AdminDashboard />
+              <AdminMenu />
             </AdminRoute>
           }
         >
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>
-      <Footer />
+      {!hideNavAndFooter && <Footer />}
     </div>
   );
 };

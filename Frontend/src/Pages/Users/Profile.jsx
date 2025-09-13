@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   User,
-  Mail,
-  Phone,
-  MapPin,
   Edit3,
   Camera,
   Save,
@@ -19,7 +16,7 @@ import {
   Bell,
   ChevronRight,
 } from "lucide-react";
-import Logout from "../Admin/Logout";
+import Logout from "../Admin/Components/Logout";
 
 export default function EcommerceProfilePage() {
   const [user, setUser] = useState({
@@ -34,16 +31,12 @@ export default function EcommerceProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
-
-  // Mock stats data - will be populated from API in future
   const [userStats, setUserStats] = useState({
     totalOrders: 0,
     wishlistItems: 0,
     reviewsGiven: 0,
     walletBalance: 0,
   });
-
-  // Fetch user data from API
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -59,7 +52,6 @@ export default function EcommerceProfilePage() {
           ...prevUser,
           name: userData.name || "",
           email: userData.email || "",
-          // Other fields remain empty as requested
         }));
       } else {
         console.error("Failed to fetch user data");
@@ -119,24 +111,11 @@ export default function EcommerceProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Navigation */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <nav className="text-sm text-gray-600">
-            <span>Home</span>
-            <ChevronRight className="w-4 h-4 inline mx-2" />
-            <span className="text-blue-600 font-medium">My Account</span>
-          </nav>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              {/* Profile Header */}
               <div className="p-4 border-b bg-blue-50">
                 <div className="flex items-center">
                   <div className="relative">
@@ -163,7 +142,6 @@ export default function EcommerceProfilePage() {
                 </div>
               </div>
 
-              {/* Menu Items */}
               <div className="divide-y divide-gray-100">
                 {menuItems.map((item, index) => (
                   <div
@@ -188,15 +166,13 @@ export default function EcommerceProfilePage() {
                 ))}
               </div>
             </div>
-            <div className="my-10">
+            <div className="my-10 px-10">
               <Logout />
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm">
-              {/* Profile Header */}
               <div className="p-6 border-b">
                 <div className="flex items-center justify-between">
                   <h1 className="text-2xl font-bold text-gray-900">
@@ -231,10 +207,8 @@ export default function EcommerceProfilePage() {
                 </div>
               </div>
 
-              {/* Profile Form */}
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Profile Image */}
                   <div className="md:col-span-2 flex items-center gap-4">
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
@@ -272,7 +246,6 @@ export default function EcommerceProfilePage() {
                     </div>
                   </div>
 
-                  {/* Full Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name *
@@ -294,7 +267,6 @@ export default function EcommerceProfilePage() {
                     )}
                   </div>
 
-                  {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Email Address *
@@ -316,7 +288,6 @@ export default function EcommerceProfilePage() {
                     )}
                   </div>
 
-                  {/* Phone Number */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number
@@ -338,7 +309,6 @@ export default function EcommerceProfilePage() {
                     )}
                   </div>
 
-                  {/* Gender */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Gender
@@ -363,7 +333,6 @@ export default function EcommerceProfilePage() {
                     )}
                   </div>
 
-                  {/* Date of Birth */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Date of Birth
@@ -385,7 +354,6 @@ export default function EcommerceProfilePage() {
                   </div>
                 </div>
 
-                {/* Additional Info Sections */}
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <h3 className="font-semibold text-gray-900 mb-2">
