@@ -19,6 +19,7 @@ import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useEffect } from "react";
 import AdminMenu from "./Pages/Admin/Components/AdminMenu";
+import AddProducts from "./Pages/Admin/Components/AddProducts";
 
 const App = () => {
   const location = useLocation();
@@ -65,7 +66,10 @@ const App = () => {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
+          <Route path="products">
+            <Route index element={<AdminProducts />} />
+            <Route path="add" element={<AddProducts />} />
+          </Route>
           <Route path="users" element={<AdminUsers />} />
           <Route path="orders" element={<AdminOrders />} />
         </Route>
