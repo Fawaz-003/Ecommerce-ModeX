@@ -9,6 +9,7 @@ import {
   Tag,
   ArrowLeft,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
@@ -20,7 +21,6 @@ const AddProducts = () => {
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const categories = [
     "Mobiles & Tablets",
@@ -68,6 +68,7 @@ const AddProducts = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+
   const handleSubmit = async () => {
     setIsLoading(true);
 
@@ -84,12 +85,6 @@ const AddProducts = () => {
         })
       );
 
-      if (images.length < 3) {
-        alert("Please upload at least 3 images");
-        setIsLoading(false);
-        return;
-      }
-
       images.forEach((image, index) => {
         formData.append("images", image.file);
       });
@@ -101,19 +96,24 @@ const AddProducts = () => {
           body: formData,
         }
       );
+      const data = await response.json();
 
       if (response.ok) {
-        setSuccess(true);
+        toast.success(data.message, {
+          position: "top-right",
+          style: { margin: "45px" },
+        });
         setProductData({ name: "", price: "", description: "", category: "" });
         setImages([]);
-
-        setTimeout(() => setSuccess(false), 3000);
       } else {
         throw new Error("Failed to add product");
       }
     } catch (error) {
       console.error("Error adding product:", error);
-      alert("Error adding product. Please try again.");
+      toast.error(err.message, {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -136,14 +136,6 @@ const AddProducts = () => {
           </button>
         </div>
       </div>
-
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800 font-medium">
-            Product added successfully! 🎉
-          </p>
-        </div>
-      )}
 
       <div className="space-y-6">
         <div className="flex w-full gap-4">
@@ -219,7 +211,7 @@ const AddProducts = () => {
         <div>
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
             <Upload className="w-4 h-4" />
-            Product Images (3-4 images required)
+            Product Images (upload upto 4 images)
           </label>
 
           <div className="space-y-4">
@@ -278,20 +270,13 @@ const AddProducts = () => {
                 ))}
               </div>
             )}
-
-            {images.length > 0 && images.length < 3 && (
-              <p className="text-sm text-orange-600">
-                Please upload at least {3 - images.length} more image
-                {3 - images.length !== 1 ? "s" : ""}
-              </p>
-            )}
           </div>
         </div>
 
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isLoading || images.length < 3}
+          disabled={isLoading || images.length === 0}
           className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {isLoading ? (
