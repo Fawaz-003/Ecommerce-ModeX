@@ -9,17 +9,16 @@ const Logout = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("user-token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("user-info");
     navigate("/login");
   };
 
   return (
     <button
       onClick={handleLogout}
-      className="w-full p-2 text-[17px] font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 hover:cursor-pointer transition flex items-center justify-center"
+      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition"
     >
-      <LogOut size={19} className="m-1.5"/>
-      <div>Sign Out</div>
+      Logout
     </button>
   );
 };
