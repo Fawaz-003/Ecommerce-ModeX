@@ -5,12 +5,14 @@ export const addProduct = async (req, res) => {
   try {
     let productData = JSON.parse(req.body.productData);
     const images = req.files;
+    const category = productData.category;
+    const categoryFolder = category.replace(/[^a-zA-Z0-9]/g, "_");
 
     let imagesUrl = await Promise.all(
       images.map(async (image) => {
         let result = await cloudinary.uploader.upload(image.path, {
           resource_type: "image",
-          folder: "Ecommerce_ModeX/products",
+          folder: `Ecommerce_ModeX/products/${categoryFolder}`,
         });
         return result.secure_url;
       })
@@ -21,6 +23,8 @@ export const addProduct = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Product added successfully",
+      data: { ...productData },
+      images: { imagesUrl }
     });
   } catch (error) {
     console.error(error.message);

@@ -4,7 +4,8 @@ import {
   X,
   Plus,
   Package,
-  DollarSign,
+  IndianRupee,
+  Badge,
   FileText,
   Tag,
   ArrowLeft,
@@ -17,6 +18,7 @@ const AddProducts = () => {
     price: "",
     description: "",
     category: "",
+    brand: "",
   });
 
   const [images, setImages] = useState([]);
@@ -82,6 +84,7 @@ const AddProducts = () => {
           price: parseInt(productData.price),
           description: productData.description,
           category: productData.category,
+          brand: productData.brand,
         })
       );
 
@@ -103,7 +106,7 @@ const AddProducts = () => {
           position: "top-right",
           style: { margin: "45px" },
         });
-        setProductData({ name: "", price: "", description: "", category: "" });
+        setProductData({ name: "", price: "", description: "", category: "", brand: "" });
         setImages([]);
       } else {
         throw new Error("Failed to add product");
@@ -156,7 +159,7 @@ const AddProducts = () => {
 
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-              <DollarSign className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4" />
               Price
             </label>
             <input
@@ -165,6 +168,21 @@ const AddProducts = () => {
               value={productData.price}
               onChange={handleInputChange}
               min="0"
+              className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              <Badge className="w-4 h-4" />
+              Brand
+            </label>
+            <input
+              type="text"
+              name="brand"
+              value={productData.brand}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               required
             />

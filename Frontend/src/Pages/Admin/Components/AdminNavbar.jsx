@@ -6,31 +6,18 @@ const AdminNavbar = () => {
 
   return (
     <nav className="w-full bg-white shadow-lg border-b border-gray-200 px-6 py-3 lg:px-25 flex items-center justify-between fixed top-0 left-0 z-50 h-16">
-      {/* Logo */}
+    
       <div className="flex items-center">
         <div className="text-2xl font-bold text-gray-800">
           Mode<span className="text-red-600">X</span>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="hidden md:flex items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-full px-4 py-2 w-96 border border-gray-200">
-        <Search className="text-gray-400" size={18} />
-        <input
-          type="text"
-          placeholder="Search products..."
-          className="bg-transparent outline-none px-3 text-sm w-full text-gray-700 placeholder-gray-400"
-        />
-      </div>
-
-      {/* Right Side Icons */}
       <div className="flex items-center space-x-5">
-        {/* Mobile Search */}
         <button className="md:hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
           <Search size={20} />
         </button>
 
-        {/* Notifications */}
         <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
           <Bell size={20} />
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
@@ -38,7 +25,6 @@ const AdminNavbar = () => {
           </span>
         </button>
 
-        {/* Messages */}
         <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
           <MessageSquare size={20} />
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
@@ -46,7 +32,6 @@ const AdminNavbar = () => {
           </span>
         </button>
 
-        {/* Profile Dropdown */}
         <div className="relative">
           <button
             onClick={() => setProfileDropdown(!profileDropdown)}
@@ -58,7 +43,6 @@ const AdminNavbar = () => {
             <ChevronDown size={16} className="hidden sm:block" />
           </button>
 
-          {/* Dropdown Menu */}
           {profileDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
               <div className="px-4 py-2 border-b border-gray-100">
