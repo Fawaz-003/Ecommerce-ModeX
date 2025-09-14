@@ -55,7 +55,6 @@ const AdminSidebar = () => {
   const handleLogout = () => {
     localStorage.removeItem("user-token");
     localStorage.removeItem("user");
-    // Navigate to login - you'll need to implement this based on your routing
   };
 
   return (
