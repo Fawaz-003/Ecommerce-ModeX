@@ -15,7 +15,7 @@ const AdminRoute = ({ children }) => {
       setIsAuthorized(false);
     }
 
-    setLoading(false); // ✅ stop loading after check
+    setLoading(false);
   }, []);
 
   if (loading) {

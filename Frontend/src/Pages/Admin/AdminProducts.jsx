@@ -22,7 +22,7 @@ const AdminProducts = () => {
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">Manage Products</h1>
-      <button className="px-4 py-2 bg-orange-500 text-white rounded-lg">+ Add Product</button>
+      <button onClick={() => navigate("/admin/products/add")} className="px-4 py-2 bg-orange-500 text-white rounded-lg">+ Add Product</button>
       <table className="w-full mt-5 border">
         <thead className="bg-gray-200">
           <tr>

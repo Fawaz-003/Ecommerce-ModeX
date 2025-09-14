@@ -14,6 +14,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // start loading
 
     try {
       const res = await axios.post(
@@ -29,19 +30,20 @@ const Login = () => {
       localStorage.setItem("user-token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      console.log(data);
       toast.success(data.message, {
         position: "top-right",
-        style: { margin: "50px" },
+        style: { margin: "45px" },
       });
 
       setForm({ email: "", password: "" });
 
-      if (data.user.role === 1) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
+      setTimeout(() => {
+        if (data.user.role === 1) {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/profile");
+        }
+      });
     } catch (err) {
       // axios errors: prefer err.response?.data?.message if available
       toast.error(
@@ -53,6 +55,8 @@ const Login = () => {
       );
 
       setForm({ email: "", password: "" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,9 +102,20 @@ const Login = () => {
           <div className="flex justify-center items-center">
             <button
               type="submit"
-              className="w-[50%] bg-purple-800 text-lg my-2 text-white py-2 rounded-lg hover:bg-purple-700 hover:cursor-pointer transition"
+              disabled={loading}
+              className={`w-[50%] text-lg my-2 text-white py-2 rounded-lg transition ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-purple-800 hover:bg-purple-700"
+              }`}
             >
-              Login
+              {loading ? (
+                <span className="flex justify-center items-center gap-2">
+                  <Loader2 className="animate-spin" size={20} /> Logging in...
+                </span>
+              ) : (
+                "Login"
+              )}
             </button>
           </div>
         </form>
