@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
+import {useAppContext} from "../../Context/AppContext.jsx";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
 
+  const {axios} = useAppContext();
+
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => setProducts(data.products));
+    try {
+    let res = axios.get("/api/products");
+
+    if(res){
+      setProducts(res.data.products);
+    }
+
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
   return (

@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useAppContext } from "../../Context/AppContext.jsx";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
 
+  const {axios} = useAppContext();
+
   useEffect(() => {
-    fetch("/api/orders")
-      .then((res) => res.json())
-      .then((data) => setOrders(data.orders));
+    try {
+    let res = axios.get("/api/orders");
+
+    if(res){
+      setOrders(res.data.orders);
+    }
+
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
   return (
@@ -35,5 +45,6 @@ const AdminOrders = () => {
     </div>
   );
 };
+
 
 export default AdminOrders;

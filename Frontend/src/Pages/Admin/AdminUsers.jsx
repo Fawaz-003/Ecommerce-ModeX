@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useAppContext } from "../../Context/AppContext.jsx";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
 
+  const {axios} = useAppContext();
+
   useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data.users));
+     try {
+    let res = axios.get("/api/users");
+
+    if(res){
+      setUsers(res.data.users);
+    }
+
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
   return (

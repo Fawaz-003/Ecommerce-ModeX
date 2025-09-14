@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Mail, Lock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAppContext } from "../../Context/AppContext.jsx";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
+  const { axios, navigate } = useAppContext();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,14 +16,15 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const res = await axios.post(
+        "/api/users/login",
+        form,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      const data = res.data; // axios automatically parses JSON
 
       localStorage.setItem("user-token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -41,10 +43,14 @@ const Login = () => {
         navigate("/");
       }
     } catch (err) {
-      toast.error(err.message, {
-        position: "top-right",
-        style: { margin: "50px" },
-      });
+      // axios errors: prefer err.response?.data?.message if available
+      toast.error(
+        err.response?.data?.message || err.message || "Login failed",
+        {
+          position: "top-right",
+          style: { margin: "50px" },
+        }
+      );
 
       setForm({ email: "", password: "" });
     }

@@ -9,35 +9,40 @@ const Register = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    try {
-      const res = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await axios.post(
+      "/api/users/register",
+      form,
+      {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      }
+    );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
+    const data = res.data; // axios automatically parses JSON
 
-      toast.success(data.message, {
+    toast.success(data.message, {
+      position: "top-right",
+      style: { margin: "50px" },
+    });
+
+    setForm({ name: "", email: "", password: "" });
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message || err.message || "Registration failed",
+      {
         position: "top-right",
         style: { margin: "50px" },
-      });
+      }
+    );
 
-      setForm({ name: "", email: "", password: "" });
+    setForm({ name: "", email: "", password: "" });
+  }
+};
 
-    } catch (err) {
-      toast.error(err.message, {
-        position: "top-right",
-        style: { margin: "50px" },
-      });
-
-      setForm({ name: "", email: "", password: "" });
-    }
-  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
