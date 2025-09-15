@@ -102,7 +102,10 @@ const AddProducts = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(data.message);
+        toast.success(data.message, {
+          position: "top-right",
+          style: { margin: "45px" },
+        });
         setProductData({ name: "", price: "", description: "", category: "", brand: "" });
         setImages([]);
       } else {
@@ -110,7 +113,10 @@ const AddProducts = () => {
       }
     } catch (error) {
       console.error("Error adding product:", error);
-      toast.error(error.message);
+      toast.error(err.message, {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
     } finally {
       setIsLoading(false);
     }

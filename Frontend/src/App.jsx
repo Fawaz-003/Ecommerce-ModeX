@@ -38,19 +38,7 @@ const App = () => {
     <div>
       {/* Show Navbar only if NOT in admin area */}
       {!hideNavAndFooter && <Navbar />}
-      <ToastContainer
-        position="top-center"
-        autoClose={2500}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        limit={3}
-        toastClassName="!w-full !max-w-sm md:!max-w-md !mx-auto"
-        bodyClassName="text-sm"
-      />
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />

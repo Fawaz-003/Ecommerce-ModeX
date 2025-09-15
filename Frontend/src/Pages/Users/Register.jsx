@@ -24,11 +24,20 @@ const handleSubmit = async (e) => {
 
     const data = res.data; // axios automatically parses JSON
 
-    toast.success(data.message);
+    toast.success(data.message, {
+      position: "top-right",
+      style: { margin: "50px" },
+    });
 
     setForm({ name: "", email: "", password: "" });
   } catch (err) {
-    toast.error(err.response?.data?.message || err.message || "Registration failed");
+    toast.error(
+      err.response?.data?.message || err.message || "Registration failed",
+      {
+        position: "top-right",
+        style: { margin: "50px" },
+      }
+    );
 
     setForm({ name: "", email: "", password: "" });
   }

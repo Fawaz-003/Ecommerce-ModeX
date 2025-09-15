@@ -31,7 +31,10 @@ const Login = () => {
       localStorage.setItem("user-token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      toast.success(data.message);
+      toast.success(data.message, {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
 
       setForm({ email: "", password: "" });
 
@@ -44,7 +47,13 @@ const Login = () => {
       });
     } catch (err) {
       // axios errors: prefer err.response?.data?.message if available
-      toast.error(err.response?.data?.message || err.message || "Login failed");
+      toast.error(
+        err.response?.data?.message || err.message || "Login failed",
+        {
+          position: "top-right",
+          style: { margin: "45px" },
+        }
+      );
 
       setForm({ email: "", password: "" });
     } finally {
