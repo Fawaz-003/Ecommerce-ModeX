@@ -9,13 +9,25 @@ import productRouter from './routes/productRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Allow both production and local dev origins
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URLS, // optional comma-separated list
+  'http://localhost:5173'
+]
+  .filter(Boolean)
+  .flatMap((v) => v.split(',').map((s) => s.trim()))
+  .filter(Boolean);
 
 connectDB();
 connectCloudinary();
 
 const corsOptions = {
-  origin: FRONTEND_URL,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // non-browser or same-origin
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -39,5 +51,5 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running at port ${PORT}`);
-  console.log(`CORS allowed origin: ${FRONTEND_URL}`);
+  console.log(`CORS allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
 });
