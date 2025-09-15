@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../Context/AppContext.jsx";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   //const navigate = useNavigate();
   const { axios, navigate } = useAppContext();
 

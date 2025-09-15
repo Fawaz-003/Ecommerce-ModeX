@@ -1,46 +1,62 @@
 import React, { useEffect, useState } from "react";
-import {useAppContext} from "../../Context/AppContext.jsx";
+import { useAppContext } from "../../Context/AppContext.jsx";
+import { Package, Plus, Search, Filter, Edit3, Trash2 } from "lucide-react";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [categories, setCategories] = useState([]);
 
-  const {axios} = useAppContext();
+  const { axios, navigate } = useAppContext();
 
   useEffect(() => {
-    try {
-    let res = axios.get("/api/products");
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("/api/products/list");
+        const list = res.data?.products || [];
+        setProducts(list);
+        setFilteredProducts(list);
+        const uniqueCategories = Array.from(new Set(list.map(p => p.category).filter(Boolean)));
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-    if(res){
-      setProducts(res.data.products);
-    }
-
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
+    fetchProducts();
+  }, [axios]);
 
   useEffect(() => {
     let filtered = products;
 
-    // Filter by search term
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchTerm.toLowerCase())
+          product.name?.toLowerCase().includes(term) ||
+          product.brand?.toLowerCase().includes(term) ||
+          product.category?.toLowerCase().includes(term)
       );
     }
 
-    // Filter by category
     if (selectedCategory) {
-      filtered = filtered.filter(
-        (product) => product.category === selectedCategory
-      );
+      filtered = filtered.filter((product) => product.category === selectedCategory);
     }
 
     setFilteredProducts(filtered);
   }, [products, searchTerm, selectedCategory]);
+
+  const handleEdit = (id) => {
+    navigate(`/admin/products/edit/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    // TODO: wire real delete API
+    setFilteredProducts(prev => prev.filter(p => p._id !== id));
+    setProducts(prev => prev.filter(p => p._id !== id));
+  };
 
   return (
     <div>
@@ -160,11 +176,11 @@ const AdminProducts = () => {
               <tbody className="divide-y divide-slate-200">
                 {filteredProducts.map((product, index) => (
                   <tr
-                    key={product._id}
+                    key={product._id || index}
                     className="hover:bg-slate-50 transition-colors duration-200"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                      {products.findIndex((p) => p._id === product._id) + 1}
+                      {products.findIndex((p) => (p._id || p.id) === (product._id || product.id)) + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                       {product.images && product.images.length > 0 && (
@@ -182,7 +198,7 @@ const AdminProducts = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-green-600">
-                        ₹{product.price.toLocaleString("en-IN")}
+                        ₹{Number(product.price || 0).toLocaleString("en-IN")}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -198,14 +214,14 @@ const AdminProducts = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleEdit(product._id)}
+                          onClick={() => handleEdit(product._id || product.id)}
                           className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
                           <Edit3 className="w-4 h-4" />
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(product._id)}
+                          onClick={() => handleDelete(product._id || product.id)}
                           className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
                           <Trash2 className="w-4 h-4" />

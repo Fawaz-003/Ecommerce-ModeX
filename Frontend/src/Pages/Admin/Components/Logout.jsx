@@ -1,11 +1,10 @@
-//import { useNavigate } from "react-router-dom";
-import {useAppContext} from '../../Context/AppContext.jsx';
+import { LogOut } from "lucide-react";
+import { useAppContext } from "../../../Context/AppContext.jsx";
 
 
 
 const Logout = () => {
-  const {navigate} = useAppContext();
-  //const navigate = useNavigate();
+  const { navigate } = useAppContext();
 
   const handleLogout = () => {
     localStorage.removeItem("user-token");
