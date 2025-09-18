@@ -20,16 +20,18 @@ import UserRoute from "./Routes/UersRoute";
 import { useEffect } from "react";
 import AdminMenu from "./Pages/Admin/Components/AdminMenu";
 import AddProducts from "./Pages/Admin/Components/AddProducts";
+import { useAppContext } from "./Context/AppContext"; 
 
 const App = () => {
   const location = useLocation();
+  const { axios } = useAppContext();  
 
   // All paths that should NOT show Navbar and Footer
   const hideNavAndFooter = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     // Pre-warm the server when app loads
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/ping`)
+    axios.get(`${import.meta.env.VITE_BACKEND_URL}/ping`)
       .then(() => console.log("Backend pre-warmed"))
       .catch((err) => console.log("Pre-warm failed:", err));
   }, []);
