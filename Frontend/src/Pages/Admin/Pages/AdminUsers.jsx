@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAppContext } from "../../Context/AppContext.jsx";
+import { useAppContext } from "../../../Context/AppContext.jsx";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);

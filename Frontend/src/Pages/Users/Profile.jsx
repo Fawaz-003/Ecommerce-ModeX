@@ -16,7 +16,7 @@ import {
   Bell,
   ChevronRight,
 } from "lucide-react";
-import Logout from "../Admin/Components/Logout";
+import Logout from "../Admin/Components/Actions/Logout.jsx";
 
 export default function EcommerceProfilePage() {
   const [user, setUser] = useState({

@@ -11,34 +11,32 @@ import WishList from "./Pages/WishList";
 import Register from "./Pages/Users/Register";
 import Profile from "./Pages/Users/Profile";
 import AdminRoute from "./Routes/AdminRoute";
-import AdminDashboard from "./Pages/Admin/AdminDashboard";
-import AdminProducts from "./Pages/Admin/AdminProducts";
-import AdminOrders from "./Pages/Admin/AdminOrders";
-import AdminUsers from "./Pages/Admin/AdminUsers";
+import AdminDashboard from "./Pages/Admin/Pages/AdminDashboard";
+import AdminProducts from "./Pages/Admin/Pages/AdminProducts";
+import AdminOrders from "./Pages/Admin/pages/AdminOrders";
+import AdminUsers from "./Pages/Admin/pages/AdminUsers";
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useEffect } from "react";
 import AdminMenu from "./Pages/Admin/Components/AdminMenu";
-import AddProducts from "./Pages/Admin/Components/AddProducts";
-import { useAppContext } from "./Context/AppContext"; 
+import AddProducts from "./Pages/Admin/Components/Actions/AddProducts";
+import EditProducts from "./Pages/Admin/Components/Actions/EditProducts";
 
 const App = () => {
   const location = useLocation();
-  const { axios } = useAppContext();  
 
   // All paths that should NOT show Navbar and Footer
   const hideNavAndFooter = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     // Pre-warm the server when app loads
-    axios.get(`${import.meta.env.VITE_BACKEND_URL}/ping`)
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/ping`)
       .then(() => console.log("Backend pre-warmed"))
       .catch((err) => console.log("Pre-warm failed:", err));
   }, []);
 
   return (
     <div>
-      {/* Show Navbar only if NOT in admin area */}
       {!hideNavAndFooter && <Navbar />}
       <ToastContainer />
       <Routes>
@@ -71,6 +69,7 @@ const App = () => {
           <Route path="products">
             <Route index element={<AdminProducts />} />
             <Route path="add" element={<AddProducts />} />
+            <Route path="edit/:id" element={<EditProducts />} />
           </Route>
           <Route path="users" element={<AdminUsers />} />
           <Route path="orders" element={<AdminOrders />} />
