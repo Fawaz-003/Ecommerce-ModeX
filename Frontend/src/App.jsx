@@ -11,10 +11,10 @@ import WishList from "./Pages/WishList";
 import Register from "./Pages/Users/Register";
 import Profile from "./Pages/Users/Profile";
 import AdminRoute from "./Routes/AdminRoute";
-import AdminDashboard from "./Pages/Admin/Pages/AdminDashboard";
-import AdminProducts from "./Pages/Admin/Pages/AdminProducts";
-import AdminOrders from "./Pages/Admin/pages/AdminOrders";
-import AdminUsers from "./Pages/Admin/pages/AdminUsers";
+import AdminDashboard from "./Pages/Admin/AdminPages/AdminDashboard";
+import AdminProducts from "./Pages/Admin/AdminPages/AdminProducts";
+import AdminOrders from "./Pages/Admin/AdminPages/AdminOrders";
+import AdminUsers from "./Pages/Admin/AdminPages/AdminUsers";
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useEffect } from "react";
@@ -50,6 +50,7 @@ const App = () => {
         <Route path="/wishlist" element={<WishList />} />
         <Route
           path="/profile"
+          
           element={
             <UserRoute>
               <Profile />
