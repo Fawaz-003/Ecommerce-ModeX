@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAppContext } from "../../Context/AppContext.jsx";
+import { useAppContext } from "../../../Context/AppContext.jsx";
 import { Package, Plus, Search, Filter, Edit3, Trash2 } from "lucide-react";
 
 const AdminProducts = () => {
@@ -181,14 +181,14 @@ const AdminProducts = () => {
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <button
-                          onClick={() => handleEdit(product._id || product.id)}
+                          onClick={() => handleEdit(product._id)}
                           className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                         >
                           <Edit3 className="w-4 h-4" />
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(product._id || product.id)}
+                          onClick={() => handleDelete(product._id)}
                           className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
