@@ -24,9 +24,12 @@ import EditProducts from "./Pages/Admin/Components/Actions/EditProducts";
 
 const App = () => {
   const location = useLocation();
+
+  // All paths that should NOT show Navbar and Footer
   const hideNavAndFooter = location.pathname.startsWith("/admin");
 
   useEffect(() => {
+    // Pre-warm the server when app loads
     fetch(`${import.meta.env.VITE_BACKEND_URL}/ping`)
       .then(() => console.log("Backend pre-warmed"))
       .catch((err) => console.log("Pre-warm failed:", err));
