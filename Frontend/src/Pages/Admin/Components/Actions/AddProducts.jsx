@@ -266,13 +266,13 @@ const AddProducts = () => {
             </div>
 
             {images.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <img
                       src={image.preview}
                       alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      className="w-full h-50 object-cover rounded-lg border border-gray-200"
                     />
                     <button
                       type="button"
