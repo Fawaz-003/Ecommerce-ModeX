@@ -46,19 +46,21 @@ const EditProducts = () => {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`
-        );
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
         const product = res.data.product;
+        console.log(product);
         setProductData({
           name: product.name,
           price: product.price,
           description: product.description,
           category: product.category,
           brand: product.brand,
-          images: product.images,
         });
-        setImages(product.images || []);
+
+        setImages(product.images[0] ? product.images.map((imgUrl) => ({
+          preview: imgUrl,
+          name: imgUrl.split("/").pop(),
+        })) : []);
       } catch (error) {
         console.error("Error fetching product data:", error);
       }
@@ -90,6 +92,11 @@ const EditProducts = () => {
       }
     });
   };
+
+  const removeImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
 
   const handleSubmit = async () => {};
 
@@ -238,13 +245,13 @@ const EditProducts = () => {
             </div>
 
             {images.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <img
                       src={image.preview}
                       alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      className="w-full h-50 object-cover rounded-lg border border-gray-200"
                     />
                     <button
                       type="button"
