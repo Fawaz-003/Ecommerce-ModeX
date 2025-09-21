@@ -4,6 +4,8 @@ import { Bell, MessageSquare, Search, User, ChevronDown } from "lucide-react";
 const AdminNavbar = () => {
   const [profileDropdown, setProfileDropdown] = useState(false);
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
   return (
     <nav className="w-full bg-white shadow-lg border-b border-gray-200 px-6 py-3 lg:px-25 flex items-center justify-between fixed top-0 left-0 z-50 h-16">
     
@@ -46,8 +48,8 @@ const AdminNavbar = () => {
           {profileDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
               <div className="px-4 py-2 border-b border-gray-100">
-                <p className="text-sm font-medium text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">admin@modex.com</p>
+                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
               <a
                 href="#"

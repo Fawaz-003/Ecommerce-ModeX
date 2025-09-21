@@ -57,6 +57,8 @@ const AdminSidebar = () => {
     localStorage.removeItem("user");
   };
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
   return (
     <>
       {/* Mobile Menu Toggle Button */}
@@ -90,8 +92,8 @@ const AdminSidebar = () => {
         {/* Header */}
         <div className="p-6 pt-23 border-b border-slate-700">
           <div className="flex items-center space-x-3">
-            <div className="text-2xl font-bold text-[#fbcac3]">
-                Welcome Fawaz
+            <div className="text-2xl font-bold text-[rgba(237,66,97,0.78)]">
+                Welcome {user?.name}
             </div>
           </div>
         </div>
@@ -146,8 +148,8 @@ const AdminSidebar = () => {
               <span className="text-white text-sm font-medium">A</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">Admin User</p>
-              <p className="text-xs text-slate-400 truncate">admin@modex.com</p>
+              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
+              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
             </div>
           </div>
           
