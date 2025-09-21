@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const EditProducts = () => {
   const [productData, setProductData] = useState({
@@ -34,6 +35,7 @@ const EditProducts = () => {
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [removedImages, setRemovedImages] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -46,9 +48,11 @@ const EditProducts = () => {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`);
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`
+        );
         const product = res.data.product;
-        console.log(product);
+        console.log(res.data);
         setProductData({
           name: product.name,
           price: product.price,
@@ -57,10 +61,14 @@ const EditProducts = () => {
           brand: product.brand,
         });
 
-        setImages(product.images[0] ? product.images.map((imgUrl) => ({
-          preview: imgUrl,
-          name: imgUrl.split("/").pop(),
-        })) : []);
+        setImages(
+          product.images[0]
+            ? product.images.map((imgUrl) => ({
+                preview: imgUrl,
+                name: imgUrl.split("/").pop(),
+              }))
+            : []
+        );
       } catch (error) {
         console.error("Error fetching product data:", error);
       }
@@ -93,12 +101,45 @@ const EditProducts = () => {
     });
   };
 
-  const removeImage = (index) => {
+  const handleRemoveExistingImage = (index) => {
+    const img = images[index];
+    if (!img.file && img.public_id) {
+      setRemovedImages((prev) => [...prev, img.public_id]);
+    }
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("productData", JSON.stringify(productData));
+      formData.append("removedImages", JSON.stringify(removedImages));
 
-  const handleSubmit = async () => {};
+      images.forEach((img) => {
+        if (img.file) {
+          formData.append("images", img.file);
+        }
+      });
+
+      const res = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/products/update/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(res.data);
+      toast.success(res.data.message);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const { id } = useParams();
   return (
@@ -255,7 +296,7 @@ const EditProducts = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => removeImage(index)}
+                      onClick={() => handleRemoveExistingImage(index)}
                       className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                     >
                       <X className="w-4 h-4" />

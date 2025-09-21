@@ -15,9 +15,6 @@ const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URLS,
   'http://localhost:5173'
 ]
-  .filter(Boolean)
-  .flatMap((v) => v.split(',').map((s) => s.trim()))
-  .filter(Boolean);
 
 connectDB();
 connectCloudinary();
