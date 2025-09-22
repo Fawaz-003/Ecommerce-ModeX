@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const EditProducts = () => {
@@ -52,7 +52,6 @@ const EditProducts = () => {
           `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`
         );
         const product = res.data.product;
-        console.log(res.data);
         setProductData({
           name: product.name,
           price: product.price,
@@ -102,24 +101,25 @@ const EditProducts = () => {
   };
 
   const handleRemoveExistingImage = (index) => {
-    const img = images[index];
-    if (!img.file && img.public_id) {
-      setRemovedImages((prev) => [...prev, img.public_id]);
-    }
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
+  const img = images[index];
+
+  if (!img.file) {
+    setRemovedImages((prev) => [...prev, img.preview]);
+  }
+  setImages((prev) => prev.filter((_, i) => i !== index));
+};
 
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append("productData", JSON.stringify(productData));
-      formData.append("removedImages", JSON.stringify(removedImages));
+      const newImages = images.filter(img => img.file).map(img => img.file);
 
-      images.forEach((img) => {
-        if (img.file) {
-          formData.append("images", img.file);
-        }
+      formData.append("productData", JSON.stringify(productData));
+      formData.append("removeImages", JSON.stringify(removedImages)); 
+
+      newImages.forEach((file) => {
+        formData.append("images", file);
       });
 
       const res = await axios.put(
@@ -131,10 +131,8 @@ const EditProducts = () => {
           },
         }
       );
-      console.log(res.data);
       toast.success(res.data.message);
     } catch (error) {
-      console.error(error);
       toast.error(error.response?.data?.message);
     } finally {
       setIsLoading(false);

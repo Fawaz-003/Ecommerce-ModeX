@@ -23,8 +23,7 @@ const addProduct = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Product added successfully",
-      data: { ...productData },
-      images: { imagesUrl },
+      data: { ...productData, images: imagesUrl },
     });
   } catch (error) {
     console.error(error.message);
@@ -40,20 +39,42 @@ const updateProduct = async (req, res) => {
     const { productId } = req.params;
     let productData = JSON.parse(req.body.productData);
 
-    const exisingProduct = await Product.findById(productId);
-    if (!exisingProduct) {
+    let removeImages = [];
+    if (req.body.removeImages) {
+      removeImages = JSON.parse(req.body.removeImages);
+    }
+
+    const existingProduct = await Product.findById(productId);
+    if (!existingProduct) {
       return res.status(404).json({
         success: false,
         message: "Product Not Found",
       });
     }
 
-    let imagesUrl = [];
+    let remainingImages = existingProduct.images;
+    if (removeImages.length > 0) {
+      for (const imgUrl of removeImages) {
+        const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
+        try {
+          await cloudinary.uploader.destroy(
+            `Ecommerce_ModeX/products/${publicId}`
+          );
+        } catch (err) {
+          console.error("Cloudinary delete error:", err);
+        }
+      }
+      remainingImages = remainingImages.filter(
+        (img) => !removeImages.includes(img)
+      );
+    }
+
+    let newImagesUrl = [];
     if (req.files && req.files.length > 0) {
-      const category = productData.category || exisingProduct.category;
+      const category = productData.category || existingProduct.category;
       const categoryFolder = category.replace(/[^a-zA-Z0-9]/g, "_");
 
-      imagesUrl = await Promise.all(
+      newImagesUrl = await Promise.all(
         req.files.map(async (image) => {
           let result = await cloudinary.uploader.upload(image.path, {
             resource_type: "image",
@@ -64,11 +85,8 @@ const updateProduct = async (req, res) => {
       );
     }
 
-    const updatedFields = { ...exisingProduct._doc, ...productData };
-
-    if (imagesUrl.length > 0) {
-      updatedFields.images = [...exisingProduct.images, ...imagesUrl];
-    }
+    const updatedFields = { ...productData };
+    updatedFields.images = [...remainingImages, ...newImagesUrl];
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
@@ -85,7 +103,7 @@ const updateProduct = async (req, res) => {
     console.error(error.message);
     return res.status(500).json({
       success: false,
-      message: error.message,  
+      message: error.message,
     });
   }
 };
