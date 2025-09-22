@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { ShoppingCart, User, Menu, X, Heart } from "lucide-react";
 
@@ -16,13 +16,19 @@ const Navbar = () => {
     const checkAuth = () => {
       const token = localStorage.getItem("user-token");
       const user = JSON.parse(localStorage.getItem("user"));
+
       if (token && user) {
-        setProfilePath("/profile");
+        if (user.role === 0) {
+          setProfilePath("/profile");
+        } else if (user.role === 1) {
+          setProfilePath("/admin/dashboard");
+        } else {
+          setProfilePath("/login");
+        }
       } else {
         setProfilePath("/login");
       }
     };
-
     checkAuth();
 
     // optional: listen to storage events across tabs
@@ -93,7 +99,7 @@ const Navbar = () => {
             {/* User Icon (desktop) */}
             <div className="hidden md:flex items-center">
               <NavLink
-                to={profilePath}   // dynamic path here
+                to={profilePath} // dynamic path here
                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
               >
                 <User size={20} />
@@ -142,7 +148,11 @@ const Navbar = () => {
             </button>
 
             <nav className="space-y-2">
-              <NavLink to="/" onClick={toggleMenu} className={mobileNavLinkClass}>
+              <NavLink
+                to="/"
+                onClick={toggleMenu}
+                className={mobileNavLinkClass}
+              >
                 Home
               </NavLink>
               <NavLink
