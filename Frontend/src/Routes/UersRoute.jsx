@@ -9,7 +9,7 @@ const UserRoute = ({ children }) => {
     const token = localStorage.getItem("user-token");
     const user = JSON.parse(localStorage.getItem("user"));
 
-    if (token && user) {
+    if (token && user?.role === 0) {
       setIsAuthorized(true);
     } else {
       setIsAuthorized(false);
