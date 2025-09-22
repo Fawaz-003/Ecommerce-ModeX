@@ -58,7 +58,7 @@ const updateProduct = async (req, res) => {
         const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
         try {
           await cloudinary.uploader.destroy(
-            `Ecommerce_ModeX/products/${publicId}`
+            `Ecommerce_ModeX/products/${categoryFolder}/${publicId}`
           );
         } catch (err) {
           console.error("Cloudinary delete error:", err);
