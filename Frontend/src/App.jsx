@@ -19,8 +19,8 @@ import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useEffect } from "react";
 import AdminMenu from "./Pages/Admin/Components/AdminMenu";
-import AddProducts from "./Pages/Admin/Components/Actions/AddProducts";
-import EditProducts from "./Pages/Admin/Components/Actions/EditProducts";
+import AddProducts from "./Pages/Admin/Actions/AddProducts";
+import EditProducts from "./Pages/Admin/Actions/EditProducts";
 
 const App = () => {
   const location = useLocation();

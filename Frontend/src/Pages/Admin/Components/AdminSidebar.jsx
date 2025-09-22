@@ -12,7 +12,7 @@ import {
   BarChart3,
   LogOut,
 } from "lucide-react";
-import Logout from "./Actions/Logout.jsx";
+import Logout from "../Actions/Logout";
 
 const AdminSidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
