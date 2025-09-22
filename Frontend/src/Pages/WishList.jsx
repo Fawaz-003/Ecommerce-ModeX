@@ -2,7 +2,7 @@ import React from 'react'
 
 const WishList = () => {
   return (
-    <div>WishList</div>
+    <div>WishList 2</div>
   )
 }
 
