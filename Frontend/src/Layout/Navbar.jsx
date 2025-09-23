@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
+import Logo from "../assets/Logo.png"
 import { ShoppingCart, User, Menu, X, Heart } from "lucide-react";
 
 const Navbar = () => {
@@ -51,10 +52,8 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-gray-900 tracking-wide">
-              Mode<span className="text-red-500">X</span>
-            </h1>
+          <div className="flex justify-center align-center h-[40px] overflow-hidden">
+            <img src={Logo} className="h-[230px] my-[-90px]" />
           </div>
 
           {/* Desktop Navigation */}

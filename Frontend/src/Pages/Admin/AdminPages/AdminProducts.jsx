@@ -321,7 +321,7 @@ const AdminProducts = () => {
                               Delete
                             </button>
                             {isLoading && (
-                              <Loading message="Deleting product..." />
+                              <Loading message="Deleting product..." variant="red" />
                             )}
                           </div>
                         </div>
