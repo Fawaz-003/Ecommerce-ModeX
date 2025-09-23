@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../../Context/AppContext.jsx";
 import { Package, Plus, Search, Filter, Edit3, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
+import Loading from "../Components/Loading.jsx";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -8,6 +10,7 @@ const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { axios, navigate } = useAppContext();
 
@@ -18,7 +21,9 @@ const AdminProducts = () => {
         const list = res.data?.products || [];
         setProducts(list);
         setFilteredProducts(list);
-        const uniqueCategories = Array.from(new Set(list.map(p => p.category).filter(Boolean)));
+        const uniqueCategories = Array.from(
+          new Set(list.map((p) => p.category).filter(Boolean))
+        );
         setCategories(uniqueCategories);
       } catch (error) {
         console.log(error);
@@ -42,7 +47,9 @@ const AdminProducts = () => {
     }
 
     if (selectedCategory) {
-      filtered = filtered.filter((product) => product.category === selectedCategory);
+      filtered = filtered.filter(
+        (product) => product.category === selectedCategory
+      );
     }
 
     setFilteredProducts(filtered);
@@ -53,9 +60,26 @@ const AdminProducts = () => {
   };
 
   const handleDelete = async (id) => {
-    // TODO: wire real delete API
-    setFilteredProducts(prev => prev.filter(p => p._id !== id));
-    setProducts(prev => prev.filter(p => p._id !== id));
+    setIsLoading(true);
+    try {
+      const res = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/api/products/delete/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        }
+      );
+      setProducts((prev) => prev.filter((p) => (p._id || p.id) !== id));
+      setFilteredProducts((prev) => prev.filter((p) => (p._id || p.id) !== id));
+
+      console.log(res);
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -165,7 +189,11 @@ const AdminProducts = () => {
                           {product.name}
                         </h4>
                         <span className="text-xs text-slate-500 shrink-0">
-                          #{products.findIndex((p) => (p._id || p.id) === (product._id || product.id)) + 1}
+                          #
+                          {products.findIndex(
+                            (p) =>
+                              (p._id || p.id) === (product._id || product.id)
+                          ) + 1}
                         </span>
                       </div>
                       <div className="mt-1 text-sm font-bold text-green-600">
@@ -176,7 +204,9 @@ const AdminProducts = () => {
                           {product.category}
                         </span>
                         {product.brand && (
-                          <span className="text-xs text-slate-600">{product.brand}</span>
+                          <span className="text-xs text-slate-600">
+                            {product.brand}
+                          </span>
                         )}
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -236,7 +266,9 @@ const AdminProducts = () => {
                       className="hover:bg-slate-50 transition-colors duration-200"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                        {products.findIndex((p) => (p._id || p.id) === (product._id || product.id)) + 1}
+                        {products.findIndex(
+                          (p) => (p._id || p.id) === (product._id || product.id)
+                        ) + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                         {product.images && product.images.length > 0 && (
@@ -270,19 +302,28 @@ const AdminProducts = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleEdit(product._id || product.id)}
-                            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            onClick={() =>
+                              handleEdit(product._id || product.id)
+                            }
+                            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 hover:cursor-pointer text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                           >
                             <Edit3 className="w-4 h-4" />
                             Edit
                           </button>
-                          <button
-                            onClick={() => handleDelete(product._id || product.id)}
-                            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
-                          </button>
+                          <div>
+                            <button
+                              onClick={() =>
+                                handleDelete(product._id || product.id)
+                              }
+                              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 hover:cursor-pointer text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                            {isLoading && (
+                              <Loading message="Deleting product..." />
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>

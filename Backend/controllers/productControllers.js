@@ -58,7 +58,7 @@ const updateProduct = async (req, res) => {
         const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
         try {
           await cloudinary.uploader.destroy(
-            `Ecommerce_ModeX/products/${categoryFolder}/${publicId}`
+            `Ecommerce_ModeX/products/${publicId}`
           );
         } catch (err) {
           console.error("Cloudinary delete error:", err);
@@ -108,6 +108,42 @@ const updateProduct = async (req, res) => {
   }
 };
 
+const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const existingProduct = await Product.findById(productId);
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product Not Found",
+      });
+    }
+
+    for (const imgUrl of existingProduct.images) {
+      const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
+      try {
+        await cloudinary.uploader.destroy(`Ecommerce_ModeX/products/${publicId}`);
+      } catch (err) {
+        console.error("Cloudinary delete error:", err);
+      }
+    }
+
+    await Product.findByIdAndDelete(productId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const ProductList = async (req, res) => {
   try {
     const products = await Product.find({});
@@ -146,7 +182,7 @@ const singleProduct = async (req, res) => {
       success: false,
       message: error.message,
     });
-  }
+  } 
 };
 
-export { addProduct, updateProduct, ProductList, singleProduct };
+export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct };
