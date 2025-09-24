@@ -60,9 +60,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-5 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center align-center h-[120px] overflow-hidden">
-          <img src={Logo} className="h-[400px] my-[-140px]"/>
-        </div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           Sign in to your account
         </h2>
@@ -169,7 +166,7 @@ const Login = () => {
                 onClick={handleSubmit}
                 className="w-full flex hover:cursor-pointer justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
               >
-                Login in
+                Sign in
               </button>
               {isLoading && <Loading message="Logging in..." variant="green" />}
             </div>
@@ -220,7 +217,7 @@ const Login = () => {
               <span className="text-sm text-gray-600">
                 Don't have an account?{" "}
                 <a
-                  href="#"
+                  href="/register"
                   className="font-medium text-blue-600 hover:text-blue-500 transition duration-200"
                 >
                   Sign up for free

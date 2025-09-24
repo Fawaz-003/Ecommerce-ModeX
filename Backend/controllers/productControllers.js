@@ -38,6 +38,8 @@ const updateProduct = async (req, res) => {
   try {
     const { productId } = req.params;
     let productData = JSON.parse(req.body.productData);
+    const category = productData.category;
+    const categoryFolder = category.replace(/[^a-zA-Z0-9]/g, "_");
 
     let removeImages = [];
     if (req.body.removeImages) {
@@ -58,7 +60,7 @@ const updateProduct = async (req, res) => {
         const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
         try {
           await cloudinary.uploader.destroy(
-            `Ecommerce_ModeX/products/${publicId}`
+            `Ecommerce_ModeX/products/${categoryFolder}/${publicId}`
           );
         } catch (err) {
           console.error("Cloudinary delete error:", err);
