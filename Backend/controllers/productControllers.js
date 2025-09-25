@@ -1,20 +1,27 @@
 import { v2 as cloudinary } from "cloudinary";
 import Product from "../models/productModels.js";
+import Category from "../models/categoryModels.js";
 
 const addProduct = async (req, res) => {
   try {
     let productData = JSON.parse(req.body.productData);
     const images = req.files;
-    const category = productData.category;
-    const categoryFolder = category.replace(/[^a-zA-Z0-9]/g, "_");
+    const categoryId = productData.category;
+    const fetchCategoryData = await Category.findById(categoryId);
+    const categoryName = fetchCategoryData.name;
+    const categoryFolder = categoryName.replace(/[^a-zA-Z0-9]/g, "_");
+    const subCategoryFolder = productData.subcategory;
 
     let imagesUrl = await Promise.all(
       images.map(async (image) => {
         let result = await cloudinary.uploader.upload(image.path, {
           resource_type: "image",
-          folder: `Ecommerce_ModeX/products/${categoryFolder}`,
+          folder: `Ecommerce_ModeX/products/${categoryFolder}/${subCategoryFolder}`,
         });
-        return result.secure_url;
+        return {
+          url: result.secure_url,
+          public_id: result.public_id,
+        };
       })
     );
 
@@ -38,8 +45,11 @@ const updateProduct = async (req, res) => {
   try {
     const { productId } = req.params;
     let productData = JSON.parse(req.body.productData);
-    const category = productData.category;
-    const categoryFolder = category.replace(/[^a-zA-Z0-9]/g, "_");
+    const categoryId = productData.category;
+    const fetchCategoryData = await Category.findById(categoryId);
+    const categoryName = fetchCategoryData.name;
+    const categoryFolder = categoryName.replace(/[^a-zA-Z0-9]/g, "_");
+    const subCategoryFolder = productData.subcategory;
 
     let removeImages = [];
     if (req.body.removeImages) {
@@ -56,39 +66,38 @@ const updateProduct = async (req, res) => {
 
     let remainingImages = existingProduct.images;
     if (removeImages.length > 0) {
-      for (const imgUrl of removeImages) {
-        const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
+      for (const img of removeImages) {
         try {
-          await cloudinary.uploader.destroy(
-            `Ecommerce_ModeX/products/${categoryFolder}/${publicId}`
-          );
+          if (img?.public_id) {
+            await cloudinary.uploader.destroy(img.public_id);
+          }
         } catch (err) {
           console.error("Cloudinary delete error:", err);
         }
       }
-      remainingImages = remainingImages.filter(
-        (img) => !removeImages.includes(img)
+      remainingImages = existingProduct.images.filter(
+        (img) => !removeImages.some((rm) => rm.public_id === img.public_id)
       );
     }
 
-    let newImagesUrl = [];
+    let newImagesObjects = [];
     if (req.files && req.files.length > 0) {
-      const category = productData.category || existingProduct.category;
-      const categoryFolder = category.replace(/[^a-zA-Z0-9]/g, "_");
-
-      newImagesUrl = await Promise.all(
+      newImagesObjects = await Promise.all(
         req.files.map(async (image) => {
-          let result = await cloudinary.uploader.upload(image.path, {
+          const result = await cloudinary.uploader.upload(image.path, {
             resource_type: "image",
-            folder: `Ecommerce_ModeX/products/${categoryFolder}`,
+            folder: `Ecommerce_ModeX/products/${categoryFolder}/${subCategoryFolder}`,
           });
-          return result.secure_url;
+          return {
+            url: result.secure_url,
+            public_id: result.public_id,
+          };
         })
       );
     }
 
     const updatedFields = { ...productData };
-    updatedFields.images = [...remainingImages, ...newImagesUrl];
+    updatedFields.images = [...remainingImages, ...newImagesObjects];
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
@@ -122,10 +131,11 @@ const deleteProduct = async (req, res) => {
       });
     }
 
-    for (const imgUrl of existingProduct.images) {
-      const publicId = imgUrl.split("/").slice(-1)[0].split(".")[0];
+    for (const img of existingProduct.images) {
       try {
-        await cloudinary.uploader.destroy(`Ecommerce_ModeX/products/${publicId}`);
+        if (img?.public_id) {
+          await cloudinary.uploader.destroy(img.public_id);
+        }
       } catch (err) {
         console.error("Cloudinary delete error:", err);
       }
@@ -184,7 +194,7 @@ const singleProduct = async (req, res) => {
       success: false,
       message: error.message,
     });
-  } 
+  }
 };
 
 export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct };

@@ -61,10 +61,11 @@ const EditProducts = () => {
         });
 
         setImages(
-          product.images[0]
-            ? product.images.map((imgUrl) => ({
-                preview: imgUrl,
-                name: imgUrl.split("/").pop(),
+          product.images && product.images.length > 0
+            ? product.images.map((imgObj) => ({
+                preview: imgObj.url,
+                name: imgObj.public_id || imgObj.url.split("/").pop(),
+                public_id: imgObj.public_id,
               }))
             : []
         );
@@ -101,22 +102,26 @@ const EditProducts = () => {
   };
 
   const handleRemoveExistingImage = (index) => {
-  const img = images[index];
+    const img = images[index];
 
-  if (!img.file) {
-    setRemovedImages((prev) => [...prev, img.preview]);
-  }
-  setImages((prev) => prev.filter((_, i) => i !== index));
-};
+    if (!img.file && img.public_id) {
+      setRemovedImages((prev) => [
+        ...prev,
+        { public_id: img.public_id, url: img.preview },
+      ]);
+    }
+
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      const newImages = images.filter(img => img.file).map(img => img.file);
+      const newImages = images.filter((img) => img.file).map((img) => img.file);
 
       formData.append("productData", JSON.stringify(productData));
-      formData.append("removeImages", JSON.stringify(removedImages)); 
+      formData.append("removeImages", JSON.stringify(removedImages));
 
       newImages.forEach((file) => {
         formData.append("images", file);
@@ -133,7 +138,7 @@ const EditProducts = () => {
       );
       toast.success(res.data.message);
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      toast.error(error.response?.data?.message || "Error saving changes");
     } finally {
       setIsLoading(false);
     }

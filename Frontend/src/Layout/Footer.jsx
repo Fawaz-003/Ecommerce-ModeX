@@ -91,7 +91,7 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
               <div className="flex justify-center align-center h-[40px] overflow-hidden">
-                <img src={ Logo } className="h-[230px] my-[-90px]" />
+                <img src={ Logo } className="h-[230px] my-[-90px] ml-[-40px]" />
               </div>
             </div>
             <p className="text-gray-500 mb-6 leading-relaxed">

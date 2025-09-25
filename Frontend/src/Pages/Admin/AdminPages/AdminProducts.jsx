@@ -10,6 +10,7 @@ const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { axios, navigate } = useAppContext();
@@ -19,12 +20,23 @@ const AdminProducts = () => {
       try {
         const res = await axios.get("/api/products/list");
         const list = res.data?.products || [];
-        setProducts(list);
-        setFilteredProducts(list);
-        const uniqueCategories = Array.from(
-          new Set(list.map((p) => p.category).filter(Boolean))
-        );
-        setCategories(uniqueCategories);
+
+        const resCategories = await axios.get("/api/category/list");
+        const categoriesList = resCategories.data?.categories || [];
+
+        const productsWithCategoryName = list.map((product) => {
+          const category = categoriesList.find(
+            (c) => c._id === product.category
+          );
+          return {
+            ...product,
+            categoryName: category ? category.name : "Unknown",
+          };
+        });
+
+        setProducts(productsWithCategoryName);
+        setFilteredProducts(productsWithCategoryName);
+        setCategories(categoriesList.map((c) => c.name));
       } catch (error) {
         console.log(error);
       }
@@ -42,13 +54,13 @@ const AdminProducts = () => {
         (product) =>
           product.name?.toLowerCase().includes(term) ||
           product.brand?.toLowerCase().includes(term) ||
-          product.category?.toLowerCase().includes(term)
+          product.categoryName?.toLowerCase().includes(term)
       );
     }
 
     if (selectedCategory) {
       filtered = filtered.filter(
-        (product) => product.category === selectedCategory
+        (product) => product.categoryName === selectedCategory
       );
     }
 
@@ -60,7 +72,7 @@ const AdminProducts = () => {
   };
 
   const handleDelete = async (id) => {
-    setIsLoading(true);
+    setDeletingId(id);
     try {
       const res = await axios.delete(
         `${import.meta.env.VITE_BACKEND_URL}/api/products/delete/${id}`,
@@ -70,15 +82,15 @@ const AdminProducts = () => {
           },
         }
       );
-      setProducts((prev) => prev.filter((p) => (p._id || p.id) !== id));
-      setFilteredProducts((prev) => prev.filter((p) => (p._id || p.id) !== id));
 
-      console.log(res);
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+      setFilteredProducts((prev) => prev.filter((p) => p._id !== id));
+
       toast.success(res.data.message);
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      toast.error(error.response?.data?.message || "Failed to delete product");
     } finally {
-      setIsLoading(false);
+      setDeletingId(null);
     }
   };
 
@@ -178,7 +190,7 @@ const AdminProducts = () => {
                   <div className="flex items-start gap-4">
                     {product.images && product.images.length > 0 && (
                       <img
-                        src={product.images[0]}
+                        src={product.images[0]?.url}
                         alt={product.name}
                         className="w-20 h-24 object-cover rounded"
                       />
@@ -201,7 +213,7 @@ const AdminProducts = () => {
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {product.category}
+                          {product.categoryNameName}
                         </span>
                         {product.brand && (
                           <span className="text-xs text-slate-600">
@@ -219,10 +231,17 @@ const AdminProducts = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(product._id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                          disabled={deletingId === product._id}
+                          className={`bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                            deletingId === product._id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
                         >
                           <Trash2 className="w-4 h-4" />
-                          Delete
+                          {deletingId === product._id
+                            ? "Deleting..."
+                            : "Delete"}
                         </button>
                       </div>
                     </div>
@@ -273,7 +292,7 @@ const AdminProducts = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                         {product.images && product.images.length > 0 && (
                           <img
-                            src={product.images[0]}
+                            src={product.images[0]?.url}
                             alt={product.name}
                             className="w-13 h-16 object-cover rounded"
                           />
@@ -291,7 +310,7 @@ const AdminProducts = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {product.category}
+                          {product.categoryName}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -312,16 +331,24 @@ const AdminProducts = () => {
                           </button>
                           <div>
                             <button
-                              onClick={() =>
-                                handleDelete(product._id || product.id)
-                              }
-                              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 hover:cursor-pointer text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                              onClick={() => handleDelete(product._id)}
+                              disabled={deletingId === product._id}
+                              className={`bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                                deletingId === product._id
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
                             >
                               <Trash2 className="w-4 h-4" />
-                              Delete
+                              {deletingId === product._id
+                                ? "Deleting..."
+                                : "Delete"}
                             </button>
                             {isLoading && (
-                              <Loading message="Deleting product..." variant="red" />
+                              <Loading
+                                message="Deleting product..."
+                                variant="red"
+                              />
                             )}
                           </div>
                         </div>

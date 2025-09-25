@@ -6,6 +6,7 @@ import connectCloudinary from './config/cloudinary.js';
 import userRouter from './routes/userRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
 import productRouter from './routes/productRoutes.js';
+import categoryRouter from './routes/categoryRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,8 +37,9 @@ app.use(express.json());
 app.use('/api/users', userRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/products', productRouter);
+app.use('/api/category', categoryRouter);
 
-
+ 
 app.get('/ping', (req, res) => {
   res.status(200).json({ ok: true });
 });
