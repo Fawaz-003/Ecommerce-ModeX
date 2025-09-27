@@ -1,48 +1,71 @@
+import { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import Collections from "./Pages/Collections";
 import Contact from "./Pages/Contact";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Users/Login";
-import Navbar from "./Layout/Navbar";
-import Footer from "./Layout/Footer";
-import WishList from "./Pages/WishList";
 import Register from "./Pages/Users/Register";
 import Profile from "./Pages/Users/Profile";
+import WishList from "./Pages/WishList";
+
+import Navbar from "./Layout/Navbar";
+import Footer from "./Layout/Footer";
+import BottomNav from "./Layout/BottomNav";
+import MobileFilter from "./Layout/MobileFilter";
+import MobileSort from "./Layout/MobileSort";
+
 import AdminRoute from "./Routes/AdminRoute";
 import AdminDashboard from "./Pages/Admin/AdminPages/AdminDashboard";
 import AdminProducts from "./Pages/Admin/AdminPages/AdminProducts";
 import AdminOrders from "./Pages/Admin/AdminPages/AdminOrders";
 import AdminUsers from "./Pages/Admin/AdminPages/AdminUsers";
-import { ToastContainer } from "react-toastify";
-import UserRoute from "./Routes/UersRoute";
-import { useEffect } from "react";
 import AdminMenu from "./Pages/Admin/Components/AdminMenu";
 import AddProducts from "./Pages/Admin/Actions/AddProducts";
 import EditProducts from "./Pages/Admin/Actions/EditProducts";
 
+import { ToastContainer } from "react-toastify";
+import UserRoute from "./Routes/UersRoute";
+import { useAppContext } from "./Context/AppContext";
+
 const App = () => {
   const location = useLocation();
+  const { axios } = useAppContext();
 
-  // All paths that should NOT show Navbar and Footer
+  // MobileFilter state
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Hide Navbar & Footer on admin routes
   const hideNavAndFooter = location.pathname.startsWith("/admin");
 
+  // Hide BottomNav on admin, login, register pages, or when MobileFilter is open
+  const hideBottomNav =
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/login") ||
+    location.pathname.startsWith("/register") ||
+    isMobileFilterOpen;
+
   useEffect(() => {
-    // Pre-warm the server when app loads
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/ping`)
+    axios
+      .get(`${import.meta.env.VITE_BACKEND_URL}/ping`)
       .then(() => console.log("Backend pre-warmed"))
       .catch((err) => console.log("Pre-warm failed:", err));
   }, []);
 
+    useEffect(() => {
+    document.body.style.overflow = isMobileFilterOpen ? "hidden" : "auto";
+  }, [isMobileFilterOpen]);
+
   return (
-    <div>
+    <div className="relative min-h-screen pb-16">
       {!hideNavAndFooter && <Navbar />}
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/collections" element={<Collections />} />
+        <Route path="/collections" element={<Collections setIsMobileFilterOpen={setIsMobileFilterOpen} />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
@@ -50,7 +73,6 @@ const App = () => {
         <Route path="/wishlist" element={<WishList />} />
         <Route
           path="/profile"
-          
           element={
             <UserRoute>
               <Profile />
@@ -58,6 +80,7 @@ const App = () => {
           }
         />
 
+        {/* Admin Routes */}
         <Route
           path="/admin"
           element={
@@ -76,7 +99,21 @@ const App = () => {
           <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>
+
+      {/* Footer */}
       {!hideNavAndFooter && <Footer />}
+
+      {/* Bottom Navigation */}
+      {!hideBottomNav && <BottomNav />}
+      <BottomNav hidden={isMobileFilterOpen || hideBottomNav} />
+
+
+      {/* Mobile Filter Drawer */}
+      {isMobileFilterOpen && (
+        <MobileFilter
+          onClose={() => setIsMobileFilterOpen(false)}
+        />
+      )}
     </div>
   );
 };
