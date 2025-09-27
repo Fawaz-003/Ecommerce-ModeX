@@ -213,7 +213,7 @@ const AdminProducts = () => {
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {product.categoryNameName}
+                          {product.categoryName}
                         </span>
                         {product.brand && (
                           <span className="text-xs text-slate-600">
