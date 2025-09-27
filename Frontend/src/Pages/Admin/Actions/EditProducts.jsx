@@ -17,7 +17,7 @@ import {
   Star,
   CheckCircle
 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Await, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const EditProducts = () => {
@@ -241,7 +241,7 @@ const EditProducts = () => {
               </div>
               <button
                 onClick={() => window.history.back()}
-                className="px-4 py-2 bg-white bg-opacity-20 text-white font-medium rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center gap-2"
+                className="px-4 py-2 bg-white bg-opacity-20 text-gray-700 font-medium rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center gap-2"
               >
                 <ArrowLeft className="w-5 h-5" />
                 Back
