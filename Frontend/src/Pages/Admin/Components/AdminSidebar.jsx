@@ -7,10 +7,7 @@ import {
   ShoppingBag,
   Menu,
   X,
-  ChevronRight,
   Settings,
-  BarChart3,
-  LogOut,
 } from "lucide-react";
 import Logout from "../Actions/Logout";
 

@@ -1,217 +1,178 @@
 import MobileFilter from "../Layout/MobileFilter";
 import MobileSort from "../Layout/MobileSort";
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, Heart, Star, ChevronRight } from 'lucide-react';
-
-// ProductCard Component
-const ProductCard = ({ product, onWishlistToggle }) => {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  const handleWishlistClick = () => {
-    setIsWishlisted(!isWishlisted);
-    onWishlistToggle && onWishlistToggle(product.id, !isWishlisted);
-  };
-
-  const renderStars = (rating) => {
-    return [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        size={14}
-        className={`${
-          i < Math.floor(rating)
-            ? 'text-yellow-400 fill-current'
-            : 'text-gray-300'
-        }`}
-      />
-    ));
-  };
-
-  return (
-    <div className="bg-white p-1 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 h-[260px] sm:h-[320px] lg:h-[380px] w-40 lg:w-[195px] sm:w-[185px] flex flex-col">
-      <div className="relative bg-gray-100 h-39 sm:h-48 lg:h-60 w-38 sm:w-auto lg:w-auto rounded-lg overflow-hidden flex-shrink-0">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <span
-          onClick={handleWishlistClick}
-          className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer z-10"
-        >
-          <Heart
-            size={16}
-            className={`sm:w-[18px] sm:h-[18px] ${
-              isWishlisted
-                ? 'text-red-500 fill-current'
-                : 'text-gray-400 hover:text-red-400'
-            } transition-colors duration-200`}
-          />
-        </span>
-      </div>
-      <div className="p-2 sm:p-4 flex flex-col flex-grow">
-        <h3 className="font-medium text-gray-800 text-[12.5px] sm:text-[14px] mb-1 line-clamp-2 leading-relaxed min-h-[2rem] sm:min-h-[3rem]">
-          {product.name}
-        </h3>
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="text-[12.5px] sm:text-[18px] font-bold text-gray-900">
-            ${product.price}
-          </span>
-          {product.originalPrice && (
-            <span className="text-[12px] sm:text-[16px] text-gray-400 line-through">
-              ${product.originalPrice}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1 mb-1">
-          <div className="flex">{renderStars(product.rating)}</div>
-          <span className="text-[10px] sm:text-xs text-gray-500 ml-1">
-            ({product.reviews})
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { useState, useMemo } from "react";
+import { Search, Filter, Heart, Star, ChevronRight } from "lucide-react";
+import ProductCard from "../Components/ProductCard";
+import { useEffect } from "react";
+import { useAppContext } from "../Context/AppContext";
 
 const Collections = () => {
-  // Sample product data - Updated to match your ProductCard structure
+  const { axios } = useAppContext();
+  // const [allProducts, setallProducts] = useState();
+
+  // useEffect(() => {
+  //   const fetchProducts = async() => {
+  //     try {
+  //       const res = await axios.get("/api/products/list");
+  //       const list = res.data.products;
+  //       console.log(list);
+  //     } catch (error) {
+  //       console.log(error)
+  //     }
+  //   };
+
+  //   fetchProducts();
+  // }, []);
+
   const allProducts = [
-    { 
-      id: 1, 
-      name: "Premium Wireless Noise-Cancelling Headphones", 
-      price: 199, 
+    {
+      id: 1,
+      name: "Premium Wireless Noise-Cancelling Headphones",
+      price: 199,
       originalPrice: 249,
-      category: "Electronics", 
-      brand: "TechPro", 
-      rating: 4.5, 
+      category: "Electronics",
+      brand: "TechPro",
+      rating: 4.5,
       reviews: 234,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 2, 
-      name: "Professional Running Shoes for Athletes", 
-      price: 129, 
-      category: "Sports", 
-      brand: "RunFast", 
-      rating: 4.2, 
+    {
+      id: 2,
+      name: "Professional Running Shoes for Athletes",
+      price: 129,
+      category: "Sports",
+      brand: "RunFast",
+      rating: 4.2,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 3, 
-      name: "Smart Coffee Maker with App Control", 
-      price: 89, 
+    {
+      id: 3,
+      name: "Smart Coffee Maker with App Control",
+      price: 89,
       originalPrice: 120,
-      category: "Home", 
-      brand: "BrewMaster", 
-      rating: 4.7, 
+      category: "Home",
+      brand: "BrewMaster",
+      rating: 4.7,
       reviews: 89,
-      image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=300&fit=crop", 
-      inStock: false 
+      image:
+        "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=300&fit=crop",
+      inStock: false,
     },
-    { 
-      id: 4, 
-      name: "Latest Smartphone with 5G Technology", 
-      price: 699, 
-      category: "Electronics", 
-      brand: "TechPro", 
-      rating: 4.3, 
+    {
+      id: 4,
+      name: "Latest Smartphone with 5G Technology",
+      price: 699,
+      category: "Electronics",
+      brand: "TechPro",
+      rating: 4.3,
       reviews: 512,
-      image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 5, 
-      name: "Eco-Friendly Yoga Mat with Alignment Guide", 
-      price: 45, 
-      category: "Sports", 
-      brand: "FitLife", 
-      rating: 4.6, 
+    {
+      id: 5,
+      name: "Eco-Friendly Yoga Mat with Alignment Guide",
+      price: 45,
+      category: "Sports",
+      brand: "FitLife",
+      rating: 4.6,
       reviews: 78,
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 6, 
-      name: "Adjustable LED Desk Lamp with USB Charging", 
-      price: 79, 
-      category: "Home", 
-      brand: "LightUp", 
-      rating: 4.1, 
+    {
+      id: 6,
+      name: "Adjustable LED Desk Lamp with USB Charging",
+      price: 79,
+      category: "Home",
+      brand: "LightUp",
+      rating: 4.1,
       reviews: 45,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 7, 
-      name: "Portable Bluetooth Speaker Waterproof", 
-      price: 149, 
-      category: "Electronics", 
-      brand: "SoundWave", 
-      rating: 4.4, 
+    {
+      id: 7,
+      name: "Portable Bluetooth Speaker Waterproof",
+      price: 149,
+      category: "Electronics",
+      brand: "SoundWave",
+      rating: 4.4,
       reviews: 167,
-      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 8, 
-      name: "Insulated Winter Jacket for Outdoor Activities", 
-      price: 159, 
+    {
+      id: 8,
+      name: "Insulated Winter Jacket for Outdoor Activities",
+      price: 159,
       originalPrice: 199,
-      category: "Clothing", 
-      brand: "WarmTech", 
-      rating: 4.5, 
+      category: "Clothing",
+      brand: "WarmTech",
+      rating: 4.5,
       reviews: 92,
-      image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 9, 
-      name: "RGB Gaming Mouse with Precision Sensor", 
-      price: 69, 
-      category: "Electronics", 
-      brand: "GamePro", 
-      rating: 4.8, 
+    {
+      id: 9,
+      name: "RGB Gaming Mouse with Precision Sensor",
+      price: 69,
+      category: "Electronics",
+      brand: "GamePro",
+      rating: 4.8,
       reviews: 203,
-      image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 10, 
-      name: "Insulated Stainless Steel Water Bottle", 
-      price: 25, 
-      category: "Sports", 
-      brand: "HydroFlex", 
-      rating: 4.3, 
+    {
+      id: 10,
+      name: "Insulated Stainless Steel Water Bottle",
+      price: 25,
+      category: "Sports",
+      brand: "HydroFlex",
+      rating: 4.3,
       reviews: 134,
-      image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 11, 
-      name: "Travel Backpack with Laptop Compartment", 
-      price: 89, 
-      category: "Clothing", 
-      brand: "TravelPro", 
-      rating: 4.2, 
+    {
+      id: 11,
+      name: "Travel Backpack with Laptop Compartment",
+      price: 89,
+      category: "Clothing",
+      brand: "TravelPro",
+      rating: 4.2,
       reviews: 67,
-      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop", 
-      inStock: true 
+      image:
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop",
+      inStock: true,
     },
-    { 
-      id: 12, 
-      name: "High-Speed Kitchen Blender for Smoothies", 
-      price: 119, 
+    {
+      id: 12,
+      name: "High-Speed Kitchen Blender for Smoothies",
+      price: 119,
       originalPrice: 149,
-      category: "Home", 
-      brand: "BlendMaster", 
-      rating: 4.6, 
+      category: "Home",
+      brand: "BlendMaster",
+      rating: 4.6,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=300&fit=crop", 
-      inStock: false 
-    }
+      image:
+        "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=300&fit=crop",
+      inStock: false,
+    },
   ];
 
   // Filter states
@@ -220,72 +181,95 @@ const Collections = () => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [showInStockOnly, setShowInStockOnly] = useState(false);
   const [minRating, setMinRating] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('name');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showSort, setShowSort] = useState(false);
 
-
   // Get unique values for filters
-  const categories = [...new Set(allProducts.map(p => p.category))];
-  const brands = [...new Set(allProducts.map(p => p.brand))];
+  const categories = [...new Set(allProducts.map((p) => p.category))];
+  const brands = [...new Set(allProducts.map((p) => p.brand))];
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = allProducts.filter(product => {
+    let filtered = allProducts.filter((product) => {
       // Price filter
-      if (product.price < priceRange[0] || product.price > priceRange[1]) return false;
-      
+      if (product.price < priceRange[0] || product.price > priceRange[1])
+        return false;
+
       // Category filter
-      if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) return false;
-      
+      if (
+        selectedCategories.length > 0 &&
+        !selectedCategories.includes(product.category)
+      )
+        return false;
+
       // Brand filter
-      if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand)) return false;
-      
+      if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand))
+        return false;
+
       // Stock filter
       if (showInStockOnly && !product.inStock) return false;
-      
+
       // Rating filter
       if (product.rating < minRating) return false;
-      
+
       // Search filter
-      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      
+      if (
+        searchQuery &&
+        !product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+        return false;
+
       return true;
     });
 
     // Sort products
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'price-low': return a.price - b.price;
-        case 'price-high': return b.price - a.price;
-        case 'rating': return b.rating - a.rating;
-        case 'name': return a.name.localeCompare(b.name);
-        default: return 0;
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "rating":
+          return b.rating - a.rating;
+        case "name":
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
       }
     });
 
     return filtered;
-  }, [allProducts, priceRange, selectedCategories, selectedBrands, showInStockOnly, minRating, searchQuery, sortBy]);
+  }, [
+    allProducts,
+    priceRange,
+    selectedCategories,
+    selectedBrands,
+    showInStockOnly,
+    minRating,
+    searchQuery,
+    sortBy,
+  ]);
 
   const toggleCategory = (category) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
   };
 
   const toggleBrand = (brand) => {
-    setSelectedBrands(prev => 
-      prev.includes(brand) 
-        ? prev.filter(b => b !== brand)
-        : [...prev, brand]
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
     );
   };
 
   const handleWishlistToggle = (productId, isAdded) => {
-    console.log(`Product ${productId} ${isAdded ? 'added to' : 'removed from'} wishlist`);
+    console.log(
+      `Product ${productId} ${isAdded ? "added to" : "removed from"} wishlist`
+    );
   };
 
   const clearAllFilters = () => {
@@ -294,17 +278,17 @@ const Collections = () => {
     setSelectedBrands([]);
     setShowInStockOnly(false);
     setMinRating(0);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   const openMobileFilter = () => {
     setIsMobileFilterOpen(true);
-    setHideBottomNavForFilter(true); 
+    setHideBottomNavForFilter(true);
   };
 
   const closeMobileFilter = () => {
     setIsMobileFilterOpen(false);
-    setHideBottomNavForFilter(false); 
+    setHideBottomNavForFilter(false);
   };
 
   return (
@@ -313,19 +297,31 @@ const Collections = () => {
       <aside className="hidden lg:block w-80 bg-white shadow-lg p-6 overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center"><Filter className="mr-2" size={20}/> Filters</h2>
-          <button onClick={clearAllFilters} className="text-sm text-blue-600 hover:text-blue-800">Clear All</button>
+          <h2 className="text-xl font-bold text-gray-800 flex items-center">
+            <Filter className="mr-2" size={20} /> Filters
+          </h2>
+          <button
+            onClick={clearAllFilters}
+            className="text-sm text-blue-600 hover:text-blue-800"
+          >
+            Clear All
+          </button>
         </div>
 
         {/* Search */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Search Products</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Search Products
+          </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}/>
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={16}
+            />
             <input
               type="text"
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
@@ -334,45 +330,104 @@ const Collections = () => {
 
         {/* Price Range */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">Price Range</label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Price Range
+          </label>
           <div className="flex items-center space-x-2 mb-2">
-            <input type="number" value={priceRange[0]} onChange={e=>setPriceRange([parseInt(e.target.value)||0,priceRange[1]])} placeholder="Min" className="w-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"/>
+            <input
+              type="number"
+              value={priceRange[0]}
+              onChange={(e) =>
+                setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])
+              }
+              placeholder="Min"
+              className="w-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
             <span className="text-gray-400">-</span>
-            <input type="number" value={priceRange[1]} onChange={e=>setPriceRange([priceRange[0],parseInt(e.target.value)||1000])} placeholder="Max" className="w-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"/>
+            <input
+              type="number"
+              value={priceRange[1]}
+              onChange={(e) =>
+                setPriceRange([priceRange[0], parseInt(e.target.value) || 1000])
+              }
+              placeholder="Max"
+              className="w-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-          <input type="range" min="0" max="1000" value={priceRange[1]} onChange={e=>setPriceRange([priceRange[0],parseInt(e.target.value)])} className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"/>
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            value={priceRange[1]}
+            onChange={(e) =>
+              setPriceRange([priceRange[0], parseInt(e.target.value)])
+            }
+            className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"
+          />
         </div>
 
         {/* Categories */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">Categories</label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Categories
+          </label>
           <div className="space-y-2">
-            {categories.length > 0 ? categories.map(cat => (
-              <label key={cat} className="flex items-center cursor-pointer">
-                <input type="checkbox" checked={selectedCategories.includes(cat)} onChange={()=>toggleCategory(cat)} className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
-                <span className="text-sm text-gray-600 hover:text-gray-800">{cat}</span>
-              </label>
-            )) : <p className="text-gray-400 text-sm">No categories found</p>}
+            {categories.length > 0 ? (
+              categories.map((cat) => (
+                <label key={cat} className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat)}
+                    onChange={() => toggleCategory(cat)}
+                    className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-600 hover:text-gray-800">
+                    {cat}
+                  </span>
+                </label>
+              ))
+            ) : (
+              <p className="text-gray-400 text-sm">No categories found</p>
+            )}
           </div>
         </div>
 
         {/* Brands */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">Brands</label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Brands
+          </label>
           <div className="space-y-2">
-            {brands.length > 0 ? brands.map(brand => (
-              <label key={brand} className="flex items-center cursor-pointer">
-                <input type="checkbox" checked={selectedBrands.includes(brand)} onChange={()=>toggleBrand(brand)} className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
-                <span className="text-sm text-gray-600 hover:text-gray-800">{brand}</span>
-              </label>
-            )) : <p className="text-gray-400 text-sm">No brands found</p>}
+            {brands.length > 0 ? (
+              brands.map((brand) => (
+                <label key={brand} className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand)}
+                    onChange={() => toggleBrand(brand)}
+                    className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-600 hover:text-gray-800">
+                    {brand}
+                  </span>
+                </label>
+              ))
+            ) : (
+              <p className="text-gray-400 text-sm">No brands found</p>
+            )}
           </div>
         </div>
 
         {/* Rating & In Stock */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
-          <select value={minRating} onChange={e=>setMinRating(parseFloat(e.target.value))} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Minimum Rating
+          </label>
+          <select
+            value={minRating}
+            onChange={(e) => setMinRating(parseFloat(e.target.value))}
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
             <option value={0}>Any Rating</option>
             <option value={3}>3+ Stars</option>
             <option value={4}>4+ Stars</option>
@@ -381,32 +436,36 @@ const Collections = () => {
         </div>
         <div className="mb-6">
           <label className="flex items-center cursor-pointer">
-            <input type="checkbox" checked={showInStockOnly} onChange={e=>setShowInStockOnly(e.target.checked)} className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
-            <span className="text-sm text-gray-600 hover:text-gray-800">In Stock Only</span>
+            <input
+              type="checkbox"
+              checked={showInStockOnly}
+              onChange={(e) => setShowInStockOnly(e.target.checked)}
+              className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-600 hover:text-gray-800">
+              In Stock Only
+            </span>
           </label>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
-
+      <main className="flex-1 p-3 lg:px-8">
         {/* Mobile Filter & Sort Row */}
-          <div className="lg:hidden h-10 w-30 absolute right-1 mb-4 px-4">
-            {/* Sort Button on Left */}
-            
-            {/* Filter Button on Right */}
-            <span
-              onClick={() => setIsMobileFilterOpen(true)}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md cursor-pointer"
-            >
-              <Filter className="mr-2" size={16} /> Filter
-            </span>
-          </div>
+        <div className="lg:hidden h-10 w-30 absolute right-1 mb-4 px-4">
+          {/* Sort Button on Left */}
 
-          {/* Conditional Mobile Sort Options */}
-          {showSort && (
-            <MobileSort sortBy={sortBy} setSortBy={setSortBy} />
-          )}
+          {/* Filter Button on Right */}
+          <span
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md cursor-pointer"
+          >
+            <Filter className="mr-2" size={16} /> Filter
+          </span>
+        </div>
+
+        {/* Conditional Mobile Sort Options */}
+        {showSort && <MobileSort sortBy={sortBy} setSortBy={setSortBy} />}
 
         {/* Sort Section */}
         <div className="mb-6">
@@ -428,26 +487,39 @@ const Collections = () => {
           </div>
 
           {/* ✅ Mobile Sort Component */}
-          <div className="lg:hidden flex justify-between items-center mb-4 px-4">
-            </div>
+          <div className="lg:hidden flex justify-between items-center mb-4 px-4"></div>
           <MobileSort sortBy={sortBy} setSortBy={setSortBy} />
         </div>
-        
+
         {/* Product Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {filteredProducts.map(product => <ProductCard key={product.id} product={product} onWishlistToggle={handleWishlistToggle}/>)}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onWishlistToggle={handleWishlistToggle}
+            />
+          ))}
         </div>
 
         {/* No Results */}
         {filteredProducts.length === 0 && (
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <Search className="text-gray-400" size={32}/>
+              <Search className="text-gray-400" size={32} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No products found</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">We couldn't find any products matching your current filters. Try adjusting your search criteria.</p>
-            <button onClick={clearAllFilters} className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-              Clear All Filters <ChevronRight className="ml-2" size={16}/>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              No products found
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              We couldn't find any products matching your current filters. Try
+              adjusting your search criteria.
+            </p>
+            <button
+              onClick={clearAllFilters}
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Clear All Filters <ChevronRight className="ml-2" size={16} />
             </button>
           </div>
         )}
@@ -455,12 +527,20 @@ const Collections = () => {
         {/* Mobile Filter Drawer */}
         {isMobileFilterOpen && (
           <MobileFilter
-            priceRange={priceRange} setPriceRange={setPriceRange}
-            categories={categories} selectedCategories={selectedCategories} toggleCategory={toggleCategory}
-            brands={brands} selectedBrands={selectedBrands} toggleBrand={toggleBrand}
-            showInStockOnly={showInStockOnly} setShowInStockOnly={setShowInStockOnly}
-            minRating={minRating} setMinRating={setMinRating}
-            clearAllFilters={clearAllFilters} onClose={()=>setIsMobileFilterOpen(close)}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            categories={categories}
+            selectedCategories={selectedCategories}
+            toggleCategory={toggleCategory}
+            brands={brands}
+            selectedBrands={selectedBrands}
+            toggleBrand={toggleBrand}
+            showInStockOnly={showInStockOnly}
+            setShowInStockOnly={setShowInStockOnly}
+            minRating={minRating}
+            setMinRating={setMinRating}
+            clearAllFilters={clearAllFilters}
+            onClose={() => setIsMobileFilterOpen(close)}
           />
         )}
 
@@ -475,8 +555,6 @@ const Collections = () => {
       </main>
     </div>
   );
-
-
 };
 
 export default Collections;
