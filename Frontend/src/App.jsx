@@ -43,8 +43,6 @@ const App = () => {
   // Hide BottomNav on admin, login, register pages, or when MobileFilter is open
   const hideBottomNav =
     location.pathname.startsWith("/admin") ||
-    location.pathname.startsWith("/login") ||
-    location.pathname.startsWith("/register") ||
     isMobileFilterOpen;
 
   useEffect(() => {

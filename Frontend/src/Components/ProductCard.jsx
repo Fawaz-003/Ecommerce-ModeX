@@ -30,7 +30,7 @@ const ProductCard = ({ product, onWishlistToggle }) => {
   };
 
   return (
-    <div className="bg-white p-1 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 h-[260px] sm:h-[450px] lg:h-[380px] flex flex-col">
+    <div className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 flex flex-col">
       {/* Image Container - Fixed Heights */}
       <div className="relative bg-gray-100 h-35 sm:h-56 lg:h-60 rounded-lg overflow-hidden flex-shrink-0">
         <img
@@ -57,13 +57,13 @@ const ProductCard = ({ product, onWishlistToggle }) => {
       
       {/* Product Info - Responsive Padding and Typography */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow">
-        <h3 className="font-medium text-gray-800 text-sm sm:text-base mb-1 line-clamp-2 leading-relaxed min-h-[2rem] sm:min-h-[3rem]">
+        <h3 className="font-medium text-gray-800 text-[12px] lg:text-[14px] sm:text-base line-clamp-2 leading-relaxed min-h-[2rem] sm:min-h-[3rem]">
           {product.name}
         </h3>
 
         {/* Price - Responsive Typography */}
         <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="text-base sm:text-lg font-bold text-gray-900">
+          <span className="text-base sm:text-lg text-[14px] lg:text-[16px] font-bold text-gray-900">
             ${product.price}
           </span>
           {product.originalPrice && (
@@ -74,7 +74,7 @@ const ProductCard = ({ product, onWishlistToggle }) => {
         </div>
         
         {/* Star Rating - Responsive Size */}
-        <div className="flex items-center gap-1 mb-1">
+        <div className="flex items-center gap-1">
           <div className="flex">
             {renderStars(product.rating)}
           </div>

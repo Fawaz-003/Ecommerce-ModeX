@@ -48,12 +48,12 @@ const Navbar = () => {
       : "text-gray-900 hover:text-gray-600 block px-3 py-2 text-base font-medium transition-colors duration-200";
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
+    <nav className="bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex justify-center align-center h-[40px] overflow-hidden">
-            <img src={Logo} className="h-[230px] my-[-90px]" />
+            <img src={Logo} className="h-[230px] w-auto my-[-95px] mx-[-40px]" />
           </div>
 
           {/* Desktop Navigation */}
@@ -76,6 +76,13 @@ const Navbar = () => {
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
+            {/* Heart Icon */}
+            <NavLink
+              to="/wishlist"
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
+            >
+              <Heart size={20} />
+            </NavLink>
             {/* Cart Icon */}
             <NavLink
               to="/cart"
@@ -87,13 +94,6 @@ const Navbar = () => {
               </span>
             </NavLink>
 
-            {/* Heart Icon */}
-            <NavLink
-              to="/wishlist"
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
-            >
-              <Heart size={20} />
-            </NavLink>
 
             {/* User Icon (desktop) */}
             <div className="hidden md:flex items-center">

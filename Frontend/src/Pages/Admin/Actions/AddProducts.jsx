@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Upload,
   X,
@@ -14,8 +14,7 @@ import {
   Layers,
   Settings,
 } from "lucide-react";
-import { toast } from "react-toastify";
-import axios from "axios";
+import { useAppContext } from "../../../Context/AppContext";
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
@@ -26,44 +25,74 @@ const AddProducts = () => {
     subcategory: "",
     brand: "",
     isfeatured: false,
-    instock: true
+    instock: true,
   });
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [variants, setVariants] = useState([{ size: '', color: '', quantity: '' }]);
+  const [variants, setVariants] = useState([
+    { size: "", color: "", quantity: "" },
+  ]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
-  const categories = [
-    "Mobiles & Tablets",
-    "Fashion",
-    "Laptops",
-    "Home & Furniture",
-    "TVs & Appliances",
-    "Headsets & Airpods",
-  ];
+  const showToast = (message, type = "info") => {
+    console.log(`${type.toUpperCase()}: ${message}`);
+  };
+  const { axios } = useAppContext();
 
-  const subcategories = [
-    "shoes",
-    "clothing",
-    "accessories",
-    "smartphones",
-    "tablets",
-    "laptops",
-    "headphones",
-    "speakers"
-  ];
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (productData.category) {
+      const selectedCategory = categories.find(
+        (cat) => cat._id === productData.category
+      );
+      if (selectedCategory && selectedCategory.subcategory) {
+        setSubcategories(selectedCategory.subcategory);
+      } else {
+        setSubcategories([]);
+      }
+    } else {
+      setSubcategories([]);
+    }
+    setProductData((prev) => ({ ...prev, subcategory: "" }));
+  }, [productData.category, categories]);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await axios.get("api/category/list");
+      const data = response.data;
+      console.log(data);
+
+      if (data.success) {
+        setCategories(data.categories || []);
+      } else {
+        throw new Error(data.message || "Failed to fetch categories");
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      showToast("Failed to load categories", "error");
+      setCategories([]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setProductData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -74,7 +103,7 @@ const AddProducts = () => {
   };
 
   const addVariant = () => {
-    setVariants(prev => [...prev, { size: '', color: '', quantity: '' }]);
+    setVariants((prev) => [...prev, { size: "", color: "", quantity: "" }]);
   };
 
   const removeVariant = (index) => {
@@ -87,7 +116,7 @@ const AddProducts = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (images.length + files.length > 4) {
-      toast.error("Maximum 4 images allowed");
+      showToast("Maximum 4 images allowed", "error");
       return;
     }
 
@@ -115,15 +144,19 @@ const AddProducts = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!productData.name.trim()) newErrors.name = 'Product name is required';
-    if (!productData.price || productData.price <= 0) newErrors.price = 'Valid price is required';
-    if (!productData.brand.trim()) newErrors.brand = 'Brand is required';
-    if (!productData.description.trim()) newErrors.description = 'Description is required';
-    if (!productData.category) newErrors.category = 'Category is required';
-    if (!productData.subcategory) newErrors.subcategory = 'Subcategory is required';
-    if (images.length === 0) newErrors.images = 'At least one image is required';
-    
+
+    if (!productData.name.trim()) newErrors.name = "Product name is required";
+    if (!productData.price || productData.price <= 0)
+      newErrors.price = "Valid price is required";
+    if (!productData.brand.trim()) newErrors.brand = "Brand is required";
+    if (!productData.description.trim())
+      newErrors.description = "Description is required";
+    if (!productData.category) newErrors.category = "Category is required";
+    if (!productData.subcategory)
+      newErrors.subcategory = "Subcategory is required";
+    if (images.length === 0)
+      newErrors.images = "At least one image is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -137,11 +170,12 @@ const AddProducts = () => {
       subcategory: "",
       brand: "",
       isfeatured: false,
-      instock: true
+      instock: true,
     });
     setImages([]);
-    setVariants([{ size: '', color: '', quantity: '' }]);
+    setVariants([{ size: "", color: "", quantity: "" }]);
     setErrors({});
+    setSubcategories([]);
   };
 
   const handleSubmit = async () => {
@@ -151,8 +185,6 @@ const AddProducts = () => {
 
     try {
       const formData = new FormData();
-
-      // Include variants in the product data
       const completeProductData = {
         name: productData.name,
         price: parseInt(productData.price),
@@ -162,7 +194,7 @@ const AddProducts = () => {
         brand: productData.brand,
         isfeatured: productData.isfeatured,
         instock: productData.instock,
-        variant: variants.filter(v => v.size || v.color || v.quantity) // Only include non-empty variants
+        variant: variants.filter((v) => v.size || v.color || v.quantity),
       };
 
       formData.append("productData", JSON.stringify(completeProductData));
@@ -171,29 +203,20 @@ const AddProducts = () => {
         formData.append("images", image.file);
       });
 
-      const response = await axios("/api/products/add",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      const data = await response.json();
+      const response = await axios.post("/api/products/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const data = response.data;
 
       if (response.ok) {
-        toast.success(data.message, {
-          position: "top-right",
-          style: { margin: "45px" },
-        });
+        showToast(data.message || "Product added successfully", "success");
         resetForm();
       } else {
         throw new Error(data.message || "Failed to add product");
       }
     } catch (error) {
       console.error("Error adding product:", error);
-      toast.error(error.message || "Error adding product", {
-        position: "top-right",
-        style: { margin: "45px" },
-      });
+      showToast(error.message || "Error adding product", "error");
     } finally {
       setIsLoading(false);
     }
@@ -209,8 +232,12 @@ const AddProducts = () => {
               <div className="flex items-center gap-3">
                 <Package className="w-8 h-8 text-white" />
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Add New Product</h1>
-                  <p className="text-green-100 mt-1">Create a new product for your store</p>
+                  <h1 className="text-2xl font-bold text-white">
+                    Add New Product
+                  </h1>
+                  <p className="text-green-100 mt-1">
+                    Create a new product for your store
+                  </p>
                 </div>
               </div>
               <button
@@ -238,7 +265,7 @@ const AddProducts = () => {
                   value={productData.name}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.name ? "border-red-500 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="Enter product name"
                 />
@@ -263,7 +290,9 @@ const AddProducts = () => {
                   onChange={handleInputChange}
                   min="0"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.price ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.price
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder="0.00"
                 />
@@ -287,7 +316,9 @@ const AddProducts = () => {
                   value={productData.brand}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.brand ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.brand
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder="Enter brand name"
                 />
@@ -312,14 +343,23 @@ const AddProducts = () => {
                   name="category"
                   value={productData.category}
                   onChange={handleInputChange}
+                  disabled={loadingCategories}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.category ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.category
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
+                  } ${
+                    loadingCategories ? "bg-gray-100 cursor-not-allowed" : ""
                   }`}
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                  <option value="">
+                    {loadingCategories
+                      ? "Loading categories..."
+                      : "Select a category"}
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
                     </option>
                   ))}
                 </select>
@@ -341,14 +381,25 @@ const AddProducts = () => {
                   name="subcategory"
                   value={productData.subcategory}
                   onChange={handleInputChange}
+                  disabled={!productData.category}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.subcategory ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.subcategory
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
+                  } ${
+                    !productData.category
+                      ? "bg-gray-100 cursor-not-allowed"
+                      : ""
                   }`}
                 >
-                  <option value="">Select a subcategory</option>
-                  {subcategories.map((sub) => (
-                    <option key={sub} value={sub}>
-                      {sub.charAt(0).toUpperCase() + sub.slice(1)}
+                  <option value="">
+                    {!productData.category
+                      ? "Select a category first"
+                      : "Select a subcategory"}
+                  </option>
+                  {subcategories.map((subcategory, index) => (
+                    <option key={index} value={subcategory}>
+                      {subcategory}
                     </option>
                   ))}
                 </select>
@@ -377,10 +428,12 @@ const AddProducts = () => {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">Featured Product</span>
+                    <span className="text-sm text-gray-700">
+                      Featured Product
+                    </span>
                   </div>
                 </label>
-                
+
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -409,7 +462,9 @@ const AddProducts = () => {
                 placeholder="Latest Apple phone with advanced features..."
                 rows="4"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
-                  errors.description ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  errors.description
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300"
                 }`}
               />
               {errors.description && (
@@ -438,33 +493,48 @@ const AddProducts = () => {
               </div>
 
               {variants.map((variant, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border-gray-300 bg-gray-50 rounded-lg mb-3 border">
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border-gray-300 bg-gray-50 rounded-lg mb-3 border"
+                >
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Size</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Size
+                    </label>
                     <input
                       type="text"
                       value={variant.size}
-                      onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                      onChange={(e) =>
+                        handleVariantChange(index, "size", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       placeholder="e.g., XL, 42, 256GB"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Color</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Color
+                    </label>
                     <input
                       type="text"
                       value={variant.color}
-                      onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                      onChange={(e) =>
+                        handleVariantChange(index, "color", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       placeholder="e.g., Red, Black, Blue"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Quantity</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Quantity
+                    </label>
                     <input
                       type="number"
                       value={variant.quantity}
-                      onChange={(e) => handleVariantChange(index, 'quantity', e.target.value)}
+                      onChange={(e) =>
+                        handleVariantChange(index, "quantity", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       placeholder="0"
                       min="0"
@@ -491,7 +561,7 @@ const AddProducts = () => {
                 <Upload className="w-4 h-4" />
                 Product Images (Upload up to 4 images) *
               </label>
-              
+
               <div className="space-y-4">
                 {/* Upload Area */}
                 <div className="relative">
@@ -515,20 +585,24 @@ const AddProducts = () => {
                     }`}
                   >
                     <div className="text-center">
-                      <Plus className={`w-8 h-8 mx-auto mb-2 ${
-                        images.length >= 4 
-                          ? 'text-gray-300' 
-                          : errors.images 
-                          ? 'text-red-400'
-                          : 'text-blue-400'
-                      }`} />
-                      <p className={`${
-                        images.length >= 4 
-                          ? 'text-gray-400' 
-                          : errors.images 
-                          ? 'text-red-600'
-                          : 'text-gray-600'
-                      }`}>
+                      <Plus
+                        className={`w-8 h-8 mx-auto mb-2 ${
+                          images.length >= 4
+                            ? "text-gray-300"
+                            : errors.images
+                            ? "text-red-400"
+                            : "text-blue-400"
+                        }`}
+                      />
+                      <p
+                        className={`${
+                          images.length >= 4
+                            ? "text-gray-400"
+                            : errors.images
+                            ? "text-red-600"
+                            : "text-gray-600"
+                        }`}
+                      >
                         {images.length >= 4
                           ? "Maximum 4 images reached"
                           : "Click to upload images or drag and drop"}

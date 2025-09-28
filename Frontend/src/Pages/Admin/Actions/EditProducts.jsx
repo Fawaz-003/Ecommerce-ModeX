@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useAppContext } from "../../../Context/AppContext";
 import {
   ArrowLeft,
   Badge,
@@ -14,15 +14,13 @@ import {
   AlertCircle,
   Layers,
   Settings,
-  Star,
-  CheckCircle
 } from "lucide-react";
 import { Await, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const EditProducts = () => {
   const { id } = useParams();
-  
+
   const [productData, setProductData] = useState({
     name: "",
     price: "",
@@ -31,7 +29,7 @@ const EditProducts = () => {
     subcategory: "",
     brand: "",
     isfeatured: false,
-    instock: true
+    instock: true,
   });
 
   const categories = [
@@ -51,21 +49,22 @@ const EditProducts = () => {
     "tablets",
     "laptops",
     "headphones",
-    "speakers"
+    "speakers",
   ];
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [removedImages, setRemovedImages] = useState([]);
   const [errors, setErrors] = useState({});
-  const [variants, setVariants] = useState([{ size: '', color: '', quantity: '' }]);
+  const [variants, setVariants] = useState([
+    { size: "", color: "", quantity: "" },
+  ]);
+  const { axios } = useAppContext();
 
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`
-        );
+        const res = await axios.get(`/api/products/${id}`);
         const product = res.data.product;
         setProductData({
           name: product.name,
@@ -75,16 +74,18 @@ const EditProducts = () => {
           subcategory: product.subcategory || "",
           brand: product.brand,
           isfeatured: product.isfeatured || false,
-          instock: product.instock !== undefined ? product.instock : true
+          instock: product.instock !== undefined ? product.instock : true,
         });
 
         // Set variants if they exist
         if (product.variant && product.variant.length > 0) {
-          setVariants(product.variant.map(v => ({
-            size: v.size || '',
-            color: v.color || '',
-            quantity: v.quantity || ''
-          })));
+          setVariants(
+            product.variant.map((v) => ({
+              size: v.size || "",
+              color: v.color || "",
+              quantity: v.quantity || "",
+            }))
+          );
         }
 
         setImages(
@@ -105,16 +106,31 @@ const EditProducts = () => {
     fetchProductData();
   }, [id]);
 
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const categoryId = productData.category;
+      const categoryres = await axios.get(`api/category/single/${categoryId}`);
+      console.log(categoryres.data);
+      console.log(categoryId)
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setProductData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -125,7 +141,7 @@ const EditProducts = () => {
   };
 
   const addVariant = () => {
-    setVariants(prev => [...prev, { size: '', color: '', quantity: '' }]);
+    setVariants((prev) => [...prev, { size: "", color: "", quantity: "" }]);
   };
 
   const removeVariant = (index) => {
@@ -175,14 +191,17 @@ const EditProducts = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!productData.name.trim()) newErrors.name = 'Product name is required';
-    if (!productData.price || productData.price <= 0) newErrors.price = 'Valid price is required';
-    if (!productData.brand.trim()) newErrors.brand = 'Brand is required';
-    if (!productData.description.trim()) newErrors.description = 'Description is required';
-    if (!productData.category) newErrors.category = 'Category is required';
-    if (!productData.subcategory) newErrors.subcategory = 'Subcategory is required';
-    
+
+    if (!productData.name.trim()) newErrors.name = "Product name is required";
+    if (!productData.price || productData.price <= 0)
+      newErrors.price = "Valid price is required";
+    if (!productData.brand.trim()) newErrors.brand = "Brand is required";
+    if (!productData.description.trim())
+      newErrors.description = "Description is required";
+    if (!productData.category) newErrors.category = "Category is required";
+    if (!productData.subcategory)
+      newErrors.subcategory = "Subcategory is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -198,7 +217,7 @@ const EditProducts = () => {
       // Include variants in the product data
       const completeProductData = {
         ...productData,
-        variant: variants.filter(v => v.size || v.color || v.quantity) // Only include non-empty variants
+        variant: variants.filter((v) => v.size || v.color || v.quantity), // Only include non-empty variants
       };
 
       formData.append("productData", JSON.stringify(completeProductData));
@@ -208,15 +227,11 @@ const EditProducts = () => {
         formData.append("images", file);
       });
 
-      const res = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/products/update/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await axios.put(`/api/products/update/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       toast.success(res.data.message);
     } catch (error) {
       toast.error(error.response?.data?.message || "Error saving changes");
@@ -235,8 +250,12 @@ const EditProducts = () => {
               <div className="flex items-center gap-3">
                 <Package className="w-8 h-8 text-white" />
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Edit Product</h1>
-                  <p className="text-blue-100 mt-1">Update your product information</p>
+                  <h1 className="text-2xl font-bold text-white">
+                    Edit Product
+                  </h1>
+                  <p className="text-blue-100 mt-1">
+                    Update your product information
+                  </p>
                 </div>
               </div>
               <button
@@ -264,7 +283,7 @@ const EditProducts = () => {
                   value={productData.name}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.name ? "border-red-500 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="Enter product name"
                 />
@@ -289,7 +308,9 @@ const EditProducts = () => {
                   onChange={handleInputChange}
                   min="0"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.price ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.price
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder="0.00"
                 />
@@ -313,7 +334,9 @@ const EditProducts = () => {
                   value={productData.brand}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.brand ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.brand
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder="Enter brand name"
                 />
@@ -339,7 +362,9 @@ const EditProducts = () => {
                   value={productData.category}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.category ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.category
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                 >
                   <option value="">Select a category</option>
@@ -368,7 +393,9 @@ const EditProducts = () => {
                   value={productData.subcategory}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.subcategory ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.subcategory
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                 >
                   <option value="">Select a subcategory</option>
@@ -403,10 +430,12 @@ const EditProducts = () => {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">Featured Product</span>
+                    <span className="text-sm text-gray-700">
+                      Featured Product
+                    </span>
                   </div>
                 </label>
-                
+
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -435,7 +464,9 @@ const EditProducts = () => {
                 placeholder="Latest Apple phone with advanced features..."
                 rows="4"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
-                  errors.description ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  errors.description
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300"
                 }`}
               />
               {errors.description && (
@@ -464,33 +495,48 @@ const EditProducts = () => {
               </div>
 
               {variants.map((variant, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 border-gray-300 rounded-lg mb-3 border">
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 border-gray-300 rounded-lg mb-3 border"
+                >
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Size</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Size
+                    </label>
                     <input
                       type="text"
                       value={variant.size}
-                      onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                      onChange={(e) =>
+                        handleVariantChange(index, "size", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       placeholder="e.g., XL, 42, 256GB"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Color</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Color
+                    </label>
                     <input
                       type="text"
                       value={variant.color}
-                      onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                      onChange={(e) =>
+                        handleVariantChange(index, "color", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       placeholder="e.g., Red, Black, Blue"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Quantity</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Quantity
+                    </label>
                     <input
                       type="number"
                       value={variant.quantity}
-                      onChange={(e) => handleVariantChange(index, 'quantity', e.target.value)}
+                      onChange={(e) =>
+                        handleVariantChange(index, "quantity", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       placeholder="0"
                       min="0"
@@ -517,7 +563,7 @@ const EditProducts = () => {
                 <Upload className="w-4 h-4" />
                 Product Images (Upload up to 4 images)
               </label>
-              
+
               <div className="space-y-4">
                 {/* Upload Area */}
                 <div className="relative">
@@ -539,8 +585,16 @@ const EditProducts = () => {
                     }`}
                   >
                     <div className="text-center">
-                      <Plus className={`w-8 h-8 mx-auto mb-2 ${images.length >= 4 ? 'text-gray-300' : 'text-blue-400'}`} />
-                      <p className={`${images.length >= 4 ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <Plus
+                        className={`w-8 h-8 mx-auto mb-2 ${
+                          images.length >= 4 ? "text-gray-300" : "text-blue-400"
+                        }`}
+                      />
+                      <p
+                        className={`${
+                          images.length >= 4 ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
                         {images.length >= 4
                           ? "Maximum 4 images reached"
                           : "Click to upload images or drag and drop"}
