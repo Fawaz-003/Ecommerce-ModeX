@@ -15,7 +15,6 @@ import Navbar from "./Layout/Navbar";
 import Footer from "./Layout/Footer";
 import BottomNav from "./Layout/BottomNav";
 import MobileFilter from "./Layout/MobileFilter";
-import MobileSort from "./Layout/MobileSort";
 
 import AdminRoute from "./Routes/AdminRoute";
 import AdminDashboard from "./Pages/Admin/AdminPages/AdminDashboard";
