@@ -28,6 +28,7 @@ import EditProducts from "./Pages/Admin/Actions/EditProducts";
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useAppContext } from "./Context/AppContext";
+import ProductDetail from "./Layout/ProductDetail";
 
 const App = () => {
   const location = useLocation();
@@ -63,6 +64,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/collections" element={<Collections setIsMobileFilterOpen={setIsMobileFilterOpen} />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />

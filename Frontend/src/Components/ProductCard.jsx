@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Heart, IndianRupee, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Responsive ProductCard Component
 const ProductCard = ({ product, onWishlistToggle }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const navigate = useNavigate();
 
   const handleWishlistClick = () => {
+    e.stopPropagation();
     setIsWishlisted(!isWishlisted);
     onWishlistToggle && onWishlistToggle(product.id, !isWishlisted);
   };
@@ -30,13 +33,15 @@ const ProductCard = ({ product, onWishlistToggle }) => {
     ));
   };
 
-  const handleAddToCart = () => {
-    console.log(`Added product ${product.id} to cart`);
-    // You can add your cart logic here
+  const handleCardClick = () => {
+    navigate(`/products/${product._id}`); // go to product detail page
   };
 
   return (
-    <div className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 flex flex-col">
+    <div
+      onClick={handleCardClick}
+      className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 flex flex-col"
+    >
       {/* Image Container - Fixed Heights */}
       <div className="relative bg-gray-100 h-35 sm:h-56 lg:h-60 rounded-lg overflow-hidden flex-shrink-0">
         <img
