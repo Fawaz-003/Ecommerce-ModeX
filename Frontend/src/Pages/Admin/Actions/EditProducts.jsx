@@ -7,7 +7,6 @@ import {
   IndianRupee,
   Package,
   Plus,
-  Tag,
   Upload,
   X,
   Save,
@@ -15,7 +14,7 @@ import {
   Layers,
   Settings,
 } from "lucide-react";
-import { Await, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const EditProducts = () => {
@@ -23,7 +22,6 @@ const EditProducts = () => {
 
   const [productData, setProductData] = useState({
     name: "",
-    price: "",
     description: "",
     category: "",
     subcategory: "",
@@ -32,34 +30,63 @@ const EditProducts = () => {
     instock: true,
   });
 
-  const categories = [
-    "Mobiles & Tablets",
-    "Fashion",
-    "Laptops",
-    "Home & Furniture",
-    "TVs & Appliances",
-    "Headsets & Airpods",
-  ];
-
-  const subcategories = [
-    "shoes",
-    "clothing",
-    "accessories",
-    "smartphones",
-    "tablets",
-    "laptops",
-    "headphones",
-    "speakers",
-  ];
+  // Dynamic categories and subcategories
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [currentCategoryName, setCurrentCategoryName] = useState("");
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [removedImages, setRemovedImages] = useState([]);
   const [errors, setErrors] = useState({});
   const [variants, setVariants] = useState([
-    { size: "", color: "", quantity: "" },
+    { size: "", color: "", price: "", quantity: "" },
   ]);
   const { axios } = useAppContext();
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Update subcategories when category changes
+  useEffect(() => {
+    if (productData.category && categories.length > 0) {
+      const selectedCategory = categories.find(cat => cat._id === productData.category);
+      if (selectedCategory && selectedCategory.subcategory) {
+        setSubcategories(selectedCategory.subcategory);
+        setCurrentCategoryName(selectedCategory.name);
+      } else {
+        setSubcategories([]);
+        setCurrentCategoryName("");
+      }
+    } else {
+      setSubcategories([]);
+      setCurrentCategoryName("");
+    }
+  }, [productData.category, categories]);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await axios.get('/api/category/list');
+      
+      if (response.data.success) {
+        setCategories(response.data.categories || []);
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch categories');
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error(error.message || 'Error fetching categories',{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -68,11 +95,10 @@ const EditProducts = () => {
         const product = res.data.product;
         setProductData({
           name: product.name,
-          price: product.price,
           description: product.description,
           category: product.category,
           subcategory: product.subcategory || "",
-          brand: product.brand,
+          brand: product.brand || "",
           isfeatured: product.isfeatured || false,
           instock: product.instock !== undefined ? product.instock : true,
         });
@@ -83,6 +109,7 @@ const EditProducts = () => {
             product.variant.map((v) => ({
               size: v.size || "",
               color: v.color || "",
+              price: v.price || "",
               quantity: v.quantity || "",
             }))
           );
@@ -99,34 +126,34 @@ const EditProducts = () => {
         );
       } catch (error) {
         console.error("Error fetching product data:", error);
-        toast.error("Error fetching product data");
+        toast.error("Error fetching product data",{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
       }
     };
 
-    fetchProductData();
-  }, [id]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const categoryId = productData.category;
-      const categoryres = await axios.get(`api/category/single/${categoryId}`);
-      console.log(categoryres.data);
-      console.log(categoryId)
-    } catch (error) {
-      console.log(error)
+    if (id) {
+      fetchProductData();
     }
-  };
+  }, [id]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setProductData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    
+    // If category is changing, reset subcategory
+    if (name === 'category') {
+      setProductData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+        subcategory: "", // Reset subcategory when category changes
+      }));
+    } else {
+      setProductData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
 
     // Clear error when user starts typing
     if (errors[name]) {
@@ -138,10 +165,15 @@ const EditProducts = () => {
     const newVariants = [...variants];
     newVariants[index] = { ...newVariants[index], [field]: value };
     setVariants(newVariants);
+    
+    // Clear variant errors when user makes changes
+    if (errors[`variant_${index}_${field}`]) {
+      setErrors((prev) => ({ ...prev, [`variant_${index}_${field}`]: "" }));
+    }
   };
 
   const addVariant = () => {
-    setVariants((prev) => [...prev, { size: "", color: "", quantity: "" }]);
+    setVariants((prev) => [...prev, { size: "", color: "", price: "", quantity: "" }]);
   };
 
   const removeVariant = (index) => {
@@ -154,7 +186,10 @@ const EditProducts = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (images.length + files.length > 4) {
-      toast.error("Maximum 4 images allowed");
+      toast.error("Maximum 4 images allowed",{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
       return;
     }
 
@@ -193,8 +228,6 @@ const EditProducts = () => {
     const newErrors = {};
 
     if (!productData.name.trim()) newErrors.name = "Product name is required";
-    if (!productData.price || productData.price <= 0)
-      newErrors.price = "Valid price is required";
     if (!productData.brand.trim()) newErrors.brand = "Brand is required";
     if (!productData.description.trim())
       newErrors.description = "Description is required";
@@ -202,22 +235,58 @@ const EditProducts = () => {
     if (!productData.subcategory)
       newErrors.subcategory = "Subcategory is required";
 
+    // Validate variants - at least one complete variant is required
+    const completeVariants = variants.filter(v => v.size && v.color && v.price && v.quantity);
+    
+    if (completeVariants.length === 0) {
+      newErrors.variants = "At least one complete variant is required (size, color, price, and quantity)";
+    }
+
+    // Validate each variant that has any field filled
+    variants.forEach((variant, index) => {
+      const hasAnyField = variant.size || variant.color || variant.price || variant.quantity;
+      
+      if (hasAnyField) {
+        if (!variant.size) {
+          newErrors[`variant_${index}_size`] = "Size is required";
+        }
+        if (!variant.color) {
+          newErrors[`variant_${index}_color`] = "Color is required";
+        }
+        if (!variant.price || parseFloat(variant.price) <= 0) {
+          newErrors[`variant_${index}_price`] = "Valid price is required";
+        }
+        if (!variant.quantity || parseInt(variant.quantity) < 0) {
+          newErrors[`variant_${index}_quantity`] = "Valid quantity is required";
+        }
+      }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error("Please fix all errors before submitting",{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
+      return;
+    }
 
     setIsLoading(true);
     try {
       const formData = new FormData();
       const newImages = images.filter((img) => img.file).map((img) => img.file);
 
+      // Filter out empty variants and include only complete ones
+      const completeVariants = variants.filter((v) => v.size && v.color && v.price && v.quantity);
+
       // Include variants in the product data
       const completeProductData = {
         ...productData,
-        variant: variants.filter((v) => v.size || v.color || v.quantity), // Only include non-empty variants
+        variant: completeVariants,
       };
 
       formData.append("productData", JSON.stringify(completeProductData));
@@ -232,9 +301,16 @@ const EditProducts = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      toast.success(res.data.message);
+      setTimeout(() => window.history.back(), 100);
+      toast.success(res.data.message,{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error saving changes");
+      toast.error(error.response?.data?.message || "Error saving changes",{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
     } finally {
       setIsLoading(false);
     }
@@ -260,7 +336,7 @@ const EditProducts = () => {
               </div>
               <button
                 onClick={() => window.history.back()}
-                className="px-4 py-2 bg-white bg-opacity-20 text-gray-700 font-medium rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center gap-2"
+                className="px-4 py-2 bg-white bg-opacity-20 text-gray-800 font-medium rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center gap-2"
               >
                 <ArrowLeft className="w-5 h-5" />
                 Back
@@ -270,7 +346,7 @@ const EditProducts = () => {
 
           <div className="p-6 space-y-6">
             {/* Basic Information Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Product Name */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -291,33 +367,6 @@ const EditProducts = () => {
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     {errors.name}
-                  </p>
-                )}
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <IndianRupee className="w-4 h-4" />
-                  Price (₹) *
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={productData.price}
-                  onChange={handleInputChange}
-                  min="0"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.price
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="0.00"
-                />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.price}
                   </p>
                 )}
               </div>
@@ -354,23 +403,26 @@ const EditProducts = () => {
               {/* Category */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Tag className="w-4 h-4" />
+                  <Layers className="w-4 h-4" />
                   Category *
                 </label>
                 <select
                   name="category"
                   value={productData.category}
                   onChange={handleInputChange}
+                  disabled={loadingCategories}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                     errors.category
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300"
-                  }`}
+                  } ${loadingCategories ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                  <option value="">
+                    {loadingCategories ? "Loading categories..." : "Select a category"}
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
                     </option>
                   ))}
                 </select>
@@ -378,6 +430,11 @@ const EditProducts = () => {
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     {errors.category}
+                  </p>
+                )}
+                {currentCategoryName && (
+                  <p className="mt-1 text-sm text-blue-600">
+                    Current category: {currentCategoryName}
                   </p>
                 )}
               </div>
@@ -392,16 +449,22 @@ const EditProducts = () => {
                   name="subcategory"
                   value={productData.subcategory}
                   onChange={handleInputChange}
+                  disabled={!productData.category}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                     errors.subcategory
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300"
-                  }`}
+                  } ${!productData.category ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
-                  <option value="">Select a subcategory</option>
-                  {subcategories.map((sub) => (
-                    <option key={sub} value={sub}>
-                      {sub.charAt(0).toUpperCase() + sub.slice(1)}
+                  <option value="">
+                    {!productData.category 
+                      ? "Select a category first" 
+                      : "Select a subcategory"
+                    }
+                  </option>
+                  {subcategories.map((subcategory, index) => (
+                    <option key={index} value={subcategory}>
+                      {subcategory}
                     </option>
                   ))}
                 </select>
@@ -429,11 +492,9 @@ const EditProducts = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">
-                      Featured Product
-                    </span>
-                  </div>
+                  <span className="text-sm text-gray-700">
+                    Featured Product
+                  </span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -444,9 +505,7 @@ const EditProducts = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">In Stock</span>
-                  </div>
+                  <span className="text-sm text-gray-700">In Stock</span>
                 </label>
               </div>
             </div>
@@ -482,7 +541,7 @@ const EditProducts = () => {
               <div className="flex items-center justify-between mb-4">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                   <Package className="w-4 h-4" />
-                  Product Variants
+                  Product Variants *
                 </label>
                 <button
                   type="button"
@@ -494,14 +553,21 @@ const EditProducts = () => {
                 </button>
               </div>
 
+              {errors.variants && (
+                <p className="mb-3 text-sm text-red-600 flex items-center bg-red-50 p-3 rounded">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  {errors.variants}
+                </p>
+              )}
+
               {variants.map((variant, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 border-gray-300 rounded-lg mb-3 border"
+                  className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 border-gray-300 rounded-lg mb-3 border"
                 >
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Size
+                      Size *
                     </label>
                     <input
                       type="text"
@@ -509,13 +575,18 @@ const EditProducts = () => {
                       onChange={(e) =>
                         handleVariantChange(index, "size", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="e.g., XL, 42, 256GB"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_size`] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="e.g., XL, 42"
                     />
+                    {errors[`variant_${index}_size`] && (
+                      <p className="text-xs text-red-600 mt-1">{errors[`variant_${index}_size`]}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Color
+                      Color *
                     </label>
                     <input
                       type="text"
@@ -523,13 +594,39 @@ const EditProducts = () => {
                       onChange={(e) =>
                         handleVariantChange(index, "color", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="e.g., Red, Black, Blue"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_color`] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="e.g., Red, Black"
                     />
+                    {errors[`variant_${index}_color`] && (
+                      <p className="text-xs text-red-600 mt-1">{errors[`variant_${index}_color`]}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Quantity
+                      Price (₹) *
+                    </label>
+                    <input
+                      type="number"
+                      value={variant.price}
+                      onChange={(e) =>
+                        handleVariantChange(index, "price", e.target.value)
+                      }
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_price`] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                    {errors[`variant_${index}_price`] && (
+                      <p className="text-xs text-red-600 mt-1">{errors[`variant_${index}_price`]}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Quantity *
                     </label>
                     <input
                       type="number"
@@ -537,10 +634,15 @@ const EditProducts = () => {
                       onChange={(e) =>
                         handleVariantChange(index, "quantity", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_quantity`] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
                       placeholder="0"
                       min="0"
                     />
+                    {errors[`variant_${index}_quantity`] && (
+                      <p className="text-xs text-red-600 mt-1">{errors[`variant_${index}_quantity`]}</p>
+                    )}
                   </div>
                   <div className="flex items-end">
                     {variants.length > 1 && (
