@@ -209,7 +209,7 @@ const AdminProducts = () => {
                         </span>
                       </div>
                       <div className="mt-1 text-sm font-bold text-green-600">
-                        ₹{Number(product.price || 0).toLocaleString("en-IN")}
+                        ₹{Number(product.variant[0]?.price || 0).toLocaleString("en-IN")}
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -305,7 +305,7 @@ const AdminProducts = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-bold text-green-600">
-                          ₹{Number(product.price || 0).toLocaleString("en-IN")}
+                          ₹{Number(product.variant[0]?.price || 0).toLocaleString("en-IN")}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
