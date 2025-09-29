@@ -1,57 +1,39 @@
 import ProductCard from "../../Components/ProductCard";
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useAppContext } from "../../Context/AppContext";
 
 const LatestCollections = () => {
-  const products = [
-    {
-      id: 1,
-      name: "Men Round Neck Pure Cotton T-shirt",
-      price: 28,
-      originalPrice: 40,
-      rating: 4.5, 
-      reviews: 124,
-      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=500&fit=crop"
-    },
-    {
-      id: 2,
-      name: "Men Tapered Fit Flat-Front Trousers",
-      price: 45,
-      originalPrice: 72,
-      rating: 4.3,
-      reviews: 89,
-      image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=500&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Women Round Neck Cotton Top",
-      price: 22,
-      originalPrice: 35,
-      rating: 4.6,
-      reviews: 156,
-      image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop"
-    },
-    {
-      id: 4,
-      name: "Women Casual Denim Jacket",
-      price: 55,
-      originalPrice: 80,
-      rating: 4.7,
-      reviews: 203,
-      image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=500&fit=crop"
-    },
-    {
-      id: 5,
-      name: "Men Slim Fit Casual Shirt",
-      price: 35,
-      originalPrice: 50,
-      rating: 4.4,
-      reviews: 167,
-      image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&h=500&fit=crop"
-    },
-  ];
+  const [products, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { axios } = useAppContext();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("/api/products/list"); // adjust endpoint
+        const list = res.data.products; // depends on your API response
+        
+        setAllProducts(list);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [axios]);
 
   const handleWishlistToggle = (productId, isWishlisted) => {
-    console.log(`Product ${productId} ${isWishlisted ? 'added to' : 'removed from'} wishlist`);
+    console.log(
+      `Product ${productId} ${
+        isWishlisted ? "added to" : "removed from"
+      } wishlist`
+    );
   };
 
   return (
@@ -67,7 +49,9 @@ const LatestCollections = () => {
             <div className="h-[1px] sm:h-[1.2px] bg-gray-300 flex-1 max-w-[50px] sm:max-w-none"></div>
           </div>
           <p className="text-gray-600 text-sm sm:text-base lg:text-lg max-w-xl lg:max-w-2xl mx-auto leading-relaxed px-4">
-            Discover our latest dress collections, blending elegance and modern style. Perfectly crafted to keep you trendy, stylish, and comfortable always
+            Discover our latest dress collections, blending elegance and modern
+            style. Perfectly crafted to keep you trendy, stylish, and
+            comfortable always
           </p>
         </div>
 
@@ -82,17 +66,30 @@ const LatestCollections = () => {
               <ChevronRight size={16} className="sm:w-5 sm:h-5 lg:w-5 lg:h-5" />
             </button>
           </div>
-          
+
           {/* Products Grid - Comprehensive Responsive Grid */}
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {products.map((product) => (
                 <ProductCard
-                  key={product.id}
+                  key={product._id}
                   product={product}
                   onWishlistToggle={handleWishlistToggle}
                 />
               ))}
+              {/* Loading State */}
+              {loading && (
+                <div className="text-center py-16">
+                  <p className="text-gray-600">Loading products...</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {error && (
+                <div className="text-center py-16">
+                  <p className="text-red-600">{error}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,180 +1,15 @@
 import MobileFilter from "../Layout/MobileFilter";
 import MobileSort from "../Layout/MobileSort";
 import { useState, useMemo } from "react";
-import { Search, Filter, Heart, Star, ChevronRight } from "lucide-react";
+import { Search, Filter, ChevronRight } from "lucide-react";
 import ProductCard from "../Components/ProductCard";
 import { useEffect } from "react";
 import { useAppContext } from "../Context/AppContext";
 
 const Collections = () => {
-  const { axios } = useAppContext();
-  // const [allProducts, setallProducts] = useState();
-
-  // useEffect(() => {
-  //   const fetchProducts = async() => {
-  //     try {
-  //       const res = await axios.get("/api/products/list");
-  //       const list = res.data.products;
-  //       console.log(list);
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   };
-
-  //   fetchProducts();
-  // }, []);
-
-  const allProducts = [
-    {
-      id: 1,
-      name: "Premium Wireless Noise-Cancelling Headphones",
-      price: 199,
-      originalPrice: 249,
-      category: "Electronics",
-      brand: "TechPro",
-      rating: 4.5,
-      reviews: 234,
-      image:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 2,
-      name: "Professional Running Shoes for Athletes",
-      price: 129,
-      category: "Sports",
-      brand: "RunFast",
-      rating: 4.2,
-      reviews: 156,
-      image:
-        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 3,
-      name: "Smart Coffee Maker with App Control",
-      price: 89,
-      originalPrice: 120,
-      category: "Home",
-      brand: "BrewMaster",
-      rating: 4.7,
-      reviews: 89,
-      image:
-        "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=300&fit=crop",
-      inStock: false,
-    },
-    {
-      id: 4,
-      name: "Latest Smartphone with 5G Technology",
-      price: 699,
-      category: "Electronics",
-      brand: "TechPro",
-      rating: 4.3,
-      reviews: 512,
-      image:
-        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 5,
-      name: "Eco-Friendly Yoga Mat with Alignment Guide",
-      price: 45,
-      category: "Sports",
-      brand: "FitLife",
-      rating: 4.6,
-      reviews: 78,
-      image:
-        "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 6,
-      name: "Adjustable LED Desk Lamp with USB Charging",
-      price: 79,
-      category: "Home",
-      brand: "LightUp",
-      rating: 4.1,
-      reviews: 45,
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 7,
-      name: "Portable Bluetooth Speaker Waterproof",
-      price: 149,
-      category: "Electronics",
-      brand: "SoundWave",
-      rating: 4.4,
-      reviews: 167,
-      image:
-        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 8,
-      name: "Insulated Winter Jacket for Outdoor Activities",
-      price: 159,
-      originalPrice: 199,
-      category: "Clothing",
-      brand: "WarmTech",
-      rating: 4.5,
-      reviews: 92,
-      image:
-        "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 9,
-      name: "RGB Gaming Mouse with Precision Sensor",
-      price: 69,
-      category: "Electronics",
-      brand: "GamePro",
-      rating: 4.8,
-      reviews: 203,
-      image:
-        "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 10,
-      name: "Insulated Stainless Steel Water Bottle",
-      price: 25,
-      category: "Sports",
-      brand: "HydroFlex",
-      rating: 4.3,
-      reviews: 134,
-      image:
-        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 11,
-      name: "Travel Backpack with Laptop Compartment",
-      price: 89,
-      category: "Clothing",
-      brand: "TravelPro",
-      rating: 4.2,
-      reviews: 67,
-      image:
-        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop",
-      inStock: true,
-    },
-    {
-      id: 12,
-      name: "High-Speed Kitchen Blender for Smoothies",
-      price: 119,
-      originalPrice: 149,
-      category: "Home",
-      brand: "BlendMaster",
-      rating: 4.6,
-      reviews: 156,
-      image:
-        "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=300&fit=crop",
-      inStock: false,
-    },
-  ];
-
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   // Filter states
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -189,6 +24,25 @@ const Collections = () => {
   // Get unique values for filters
   const categories = [...new Set(allProducts.map((p) => p.category))];
   const brands = [...new Set(allProducts.map((p) => p.brand))];
+  const { axios } = useAppContext();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("/api/products/list"); // adjust endpoint
+        const list = res.data.products; // depends on your API response
+        setAllProducts(list);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [axios]);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
@@ -500,6 +354,19 @@ const Collections = () => {
               onWishlistToggle={handleWishlistToggle}
             />
           ))}
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-16">
+              <p className="text-gray-600">Loading products...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-16">
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
         </div>
 
         {/* No Results */}
