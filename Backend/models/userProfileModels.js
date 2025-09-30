@@ -8,7 +8,7 @@ const userProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    phone: { type: String },
+    phone: { type: Number },
     gender: { type: String, enum: ["Male", "Female", "Other"] },
     dob: { type: Date },
     addresses: [
@@ -19,7 +19,6 @@ const userProfileSchema = new mongoose.Schema(
         state: { type: String },
         country: { type: String },
         postalCode: { type: String }, 
-        isDefault: { type: Boolean, default: false },
       },
     ],
     wishlist: [
