@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   Settings,
+  BookCopy,
 } from "lucide-react";
 import Logout from "../Actions/Logout";
 
@@ -43,6 +44,11 @@ const AdminSidebar = () => {
       path: "settings",
       icon: Settings,
     },
+    {
+      name: "Categories",
+      path: "categories",
+      icon: BookCopy,
+    }
   ];
 
   const isActiveLink = (path) => {
