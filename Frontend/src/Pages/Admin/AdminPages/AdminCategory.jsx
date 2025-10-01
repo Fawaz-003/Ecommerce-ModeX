@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAppContext } from "../../../Context/AppContext";
 import { toast } from "react-toastify";
+import { Plus, Edit3, Trash2, Folder } from "lucide-react";
+import OpenModel from "../Components/OpenModel.jsx";
+import Loading from "../Components/Loading.jsx";
 
 export default function CategoryListing() {
-  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const { axios } = useAppContext();
+  const [isModalOpen, setisModalOpen] = useState(false);
+  const [selectedId, setselectedId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { axios, navigate } = useAppContext();
 
   const getCategories = async () => {
     try {
@@ -16,24 +20,45 @@ export default function CategoryListing() {
       }
     } catch (err) {
       console.error("Error fetching categories", err);
-      toast.error("Failed to fetch categories");
+      toast.error("Failed to fetch categories", {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?")) return;
-
     try {
-      const response = await axios.delete(`/api/category/delete/${id}`);
+      setIsLoading(true);
+      const response = await axios.delete(`/api/category/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+        },
+      });
+
       if (response.data.success) {
-        toast.success(response.data.message || "Category deleted successfully");
-        getCategories(); // refresh list after delete
+        // ✅ Update categories state immediately
+        setCategories((prev) => prev.filter((cat) => cat._id !== id));
+
+        // ✅ Green toast for success
+        toast.success(response.data.message || "Category deleted successfully", {
+          position: "top-right",
+          style: { margin: "45px", backgroundColor: "#4CAF50", color: "#fff" },
+        });
       } else {
-        toast.error(response.data.message || "Failed to delete category");
+        toast.error(response.data.message || "Failed to delete category", {
+          position: "top-right",
+          style: { margin: "45px" },
+        });
       }
     } catch (err) {
       console.error("Error deleting category", err);
-      toast.error("Error deleting category");
+      toast.error("Error deleting category", {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,63 +67,118 @@ export default function CategoryListing() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <div className="bg-white shadow-lg rounded-2xl p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">
-            📂 Category Listing
-          </h2>
-          <button
-            onClick={() => navigate("/admin/categories/addcategory")}
-            className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
-          >
-            + Create Category
-          </button>
+    <div>
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl">
+                <Folder className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">
+                  Category Management
+                </h1>
+                <p className="text-slate-600">Manage your product categories</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate("/admin/categories/addcategory")}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              <Plus className="w-5 h-5" />
+              Create Category
+            </button>
+          </div>
         </div>
+      </div>
 
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {categories.length === 0 ? (
-          <p className="text-gray-500 text-center py-10 text-lg">
-            No categories available. Create one to get started 🚀
-          </p>
+          <div className="text-center py-16">
+            <Folder className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-600 mb-2">
+              No categories found
+            </h3>
+            <p className="text-slate-500">
+              Start by creating your first category 🚀
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
-              <thead className="bg-gray-100 text-gray-700 uppercase text-sm">
-                <tr>
-                  <th className="border-b p-4 text-left">Category</th>
-                  <th className="border-b p-4 text-left">Subcategories</th>
-                  <th className="border-b p-4 text-center">Actions</th>
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                    S.No
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                    Category
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                    Subcategories
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                    Actions
+                  </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-200">
                 {categories.map((cat, index) => (
                   <tr
                     key={cat._id || index}
-                    className="hover:bg-gray-50 transition"
+                    className="hover:bg-slate-50 transition-colors duration-200"
                   >
-                    <td className="p-4 font-medium text-gray-800">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
                       {cat.name}
                     </td>
-                    <td className="p-4 text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                       {cat.subcategory?.length > 0
                         ? cat.subcategory.join(", ")
                         : "—"}
                     </td>
-                    <td className="p-4 flex justify-center gap-3">
-                      <button
-                        onClick={() =>
-                          navigate(`/admin/categories/editcategory/${cat._id}`)
-                        }
-                        className="px-4 py-1.5 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(cat._id)}
-                        className="px-4 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                      >
-                        🗑️ Delete
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/admin/categories/editcategory/${cat._id}`)
+                          }
+                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          Edit
+                        </button>
+                        <div>
+                          <button
+                            onClick={() => {
+                              setselectedId(cat._id);
+                              setisModalOpen(true);
+                            }}
+                            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                          <OpenModel
+                            isOpen={isModalOpen}
+                            title="Confirm Delete"
+                            message="Are you sure you want to delete this category?"
+                            btnMessage="Delete"
+                            onClose={() => setisModalOpen(false)}
+                            onConfirm={() => {
+                              handleDelete(selectedId);
+                              setisModalOpen(false);
+                            }}
+                          />
+                          {isLoading && (
+                            <Loading message="Deleting..." variant="red" />
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ))}

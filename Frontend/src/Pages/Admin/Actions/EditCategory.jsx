@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { useParams} from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../../../Context/AppContext";
 import { toast } from "react-toastify";
+import { ArrowLeft, Layers, Tag, Save, Plus, Edit, Trash2 } from "lucide-react";
 
 export default function EditCategory() {
   const { id } = useParams();
-  const { axios, navigate } = useAppContext();
+  const { axios } = useAppContext();
+  const navigate = useNavigate();
 
   const [category, setCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
   const [subcategories, setSubcategories] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [editValue, setEditValue] = useState("");
-  const [subcategory, setSubcategory] = useState("");
 
-  // Fetch category
+  // ✅ Fetch category details
   const fetchCategory = async () => {
     try {
       const res = await axios.get(`/api/category/single/${id}`);
@@ -21,10 +23,10 @@ export default function EditCategory() {
         setCategory(res.data.Category.name);
         setSubcategories(res.data.Category.subcategory || []);
       } else {
-        toast.error("Failed to load category");
+        toast.error("❌ Failed to load category");
       }
     } catch (err) {
-      toast.error("Error fetching category");
+      toast.error("❌ Error fetching category");
     }
   };
 
@@ -32,25 +34,26 @@ export default function EditCategory() {
     fetchCategory();
   }, [id]);
 
-  // Add subcategory
+  // ✅ Add subcategory
   const handleAddSubcategory = () => {
     if (!subcategory.trim()) return;
     setSubcategories([...subcategories, subcategory.trim()]);
     setSubcategory("");
   };
 
-  // Remove subcategory
+  // ✅ Remove subcategory
   const handleRemove = (index) => {
     setSubcategories(subcategories.filter((_, i) => i !== index));
   };
 
-  // Edit subcategory
+  // ✅ Edit subcategory
   const handleEdit = (index) => {
     setEditIndex(index);
     setEditValue(subcategories[index]);
   };
 
   const handleSaveEdit = (index) => {
+    if (!editValue.trim()) return;
     const updated = [...subcategories];
     updated[index] = editValue.trim();
     setSubcategories(updated);
@@ -58,11 +61,14 @@ export default function EditCategory() {
     setEditValue("");
   };
 
-  // Submit
+  // ✅ Submit update
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!category.trim()) {
-      toast.error("⚠️ Category name is required");
+      toast.error("Category name is required", {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
       return;
     }
 
@@ -71,118 +77,160 @@ export default function EditCategory() {
     try {
       const response = await axios.put(`/api/category/edit/${id}`, payload);
       if (response.data.success) {
-        toast.success(response.data.message || "✅ Category updated successfully!");
-        navigate("/admin/categories"); // ✅ works after success
+        toast.success(response.data.message || "Category updated successfully!", {
+          position: "top-right",
+          style: { margin: "45px" },
+        });
+        navigate("/admin/categories");
       } else {
-        throw new Error(response.data.message || "❌ Failed to update category");
+        throw new Error(response.data.message || "Failed to update category");
       }
     } catch (error) {
-      toast.error(error.message || "❌ Error updating category");
+      toast.error(error.message || "Error updating category", {
+        position: "top-right",
+        style: { margin: "45px" },
+      });
     }
   };
 
   return (
-    <div className="p-8">
-      <div className="w-full max-w-lg bg-white shadow-xl rounded-2xl p-8 mx-auto">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">Edit Category</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Category */}
-          <div>
-            <label className="block mb-1 font-semibold text-gray-700">Category Name</label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-              placeholder="Enter category"
-            />
-          </div>
-
-          {/* Subcategory */}
-          <div>
-            <label className="block mb-1 font-semibold text-gray-700">Subcategory</label>
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={subcategory}
-                onChange={(e) => setSubcategory(e.target.value)}
-                className="flex-1 border rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                placeholder="Enter subcategory"
-              />
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-500 px-6 py-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Edit Category</h1>
+                <p className="text-purple-100 mt-1">
+                  Update category name and manage subcategories
+                </p>
+              </div>
               <button
-                type="button"
-                onClick={handleAddSubcategory}
-                className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+                onClick={() => navigate(-1)}
+                className="px-4 py-2 border border-white text-white font-medium rounded-lg hover:bg-white hover:text-purple-700 transition-all duration-200 flex items-center gap-2"
               >
-                Add
+                <ArrowLeft className="w-5 h-5" />
+                Back
               </button>
             </div>
           </div>
 
-          {/* Subcategory List */}
-          <ul className="mt-4 space-y-2">
-            {subcategories.map((sub, index) => (
-              <li
-                key={index}
-                className="flex items-center justify-between border rounded-lg p-2 bg-gray-50"
-              >
-                {editIndex === index ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="flex-1 border rounded p-2 mr-2"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleSaveEdit(index)}
-                      className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 mr-2"
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditIndex(null)}
-                      className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-gray-800">{sub}</span>
-                    <div className="space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(index)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(index)}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+          {/* Form Content */}
+          <div className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Category Name */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <Tag className="w-4 h-4" />
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Enter category name"
+                />
+              </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full px-4 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition mt-6"
-          >
-            Update Category
-          </button>
-        </form>
+              {/* Subcategory */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <Layers className="w-4 h-4" />
+                  Subcategories
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={subcategory}
+                    onChange={(e) => setSubcategory(e.target.value)}
+                    className="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="Enter subcategory"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSubcategory}
+                    className="px-4 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Subcategory List */}
+              {subcategories.length > 0 && (
+                <ul className="space-y-2">
+                  {subcategories.map((sub, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between border rounded-lg p-3 bg-gray-50"
+                    >
+                      {editIndex === index ? (
+                        <>
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="flex-1 border rounded p-2 mr-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSaveEdit(index)}
+                            className="px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-500 text-white rounded hover:from-purple-700 hover:to-indigo-600 mr-2"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditIndex(null)}
+                            className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-gray-800">{sub}</span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(index)}
+                              className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded hover:from-yellow-600 hover:to-orange-600 flex items-center gap-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemove(index)}
+                              className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded hover:from-red-600 hover:to-pink-600 flex items-center gap-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Remove
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Submit */}
+              <div className="pt-6 border-t border-gray-200">
+                <button
+                  type="submit"
+                  className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-500 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-600 focus:ring-4 focus:ring-purple-300 transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Save className="w-5 h-5" />
+                  Update Category
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
