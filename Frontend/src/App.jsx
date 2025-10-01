@@ -15,7 +15,6 @@ import Navbar from "./Layout/Navbar";
 import Footer from "./Layout/Footer";
 import BottomNav from "./Layout/BottomNav";
 import MobileFilter from "./Layout/MobileFilter";
-import MobileSort from "./Layout/MobileSort";
 
 import AdminRoute from "./Routes/AdminRoute";
 import AdminDashboard from "./Pages/Admin/AdminPages/AdminDashboard";
@@ -33,6 +32,7 @@ import EditCategory from "./Pages/Admin/Actions/EditCategory";
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useAppContext } from "./Context/AppContext";
+import ProductDetail from "./Layout/ProductDetail";
 
 const App = () => {
   const location = useLocation();
@@ -68,6 +68,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/collections" element={<Collections setIsMobileFilterOpen={setIsMobileFilterOpen} />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />

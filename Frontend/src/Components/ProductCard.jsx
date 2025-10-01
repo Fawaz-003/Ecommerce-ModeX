@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
-import { Heart, Star } from 'lucide-react';
+import React, { useState } from "react";
+import { Heart, IndianRupee, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Responsive ProductCard Component
 const ProductCard = ({ product, onWishlistToggle }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const navigate = useNavigate();
 
   const handleWishlistClick = () => {
+    e.stopPropagation();
     setIsWishlisted(!isWishlisted);
     onWishlistToggle && onWishlistToggle(product.id, !isWishlisted);
   };
+
+  const averageRating =
+    product.reviews?.length > 0
+      ? product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+        product.reviews.length
+      : 0;
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => (
@@ -17,28 +26,30 @@ const ProductCard = ({ product, onWishlistToggle }) => {
         size={14}
         className={`${
           i < Math.floor(rating)
-            ? 'text-yellow-400 fill-current'
-            : 'text-gray-300'
+            ? "text-yellow-400 fill-current"
+            : "text-gray-300"
         }`}
       />
     ));
   };
 
-  const handleAddToCart = () => {
-    console.log(`Added product ${product.id} to cart`);
-    // You can add your cart logic here
+  const handleCardClick = () => {
+    navigate(`/products/${product._id}`); // go to product detail page
   };
 
   return (
-    <div className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 flex flex-col">
+    <div
+      onClick={handleCardClick}
+      className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 flex flex-col"
+    >
       {/* Image Container - Fixed Heights */}
       <div className="relative bg-gray-100 h-35 sm:h-56 lg:h-60 rounded-lg overflow-hidden flex-shrink-0">
         <img
-          src={product.image}
+          src={product.images[0]?.url}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        
+
         {/* Wishlist Heart Icon - Responsive Positioning */}
         <button
           onClick={handleWishlistClick}
@@ -48,13 +59,13 @@ const ProductCard = ({ product, onWishlistToggle }) => {
             size={16}
             className={`sm:w-[18px] sm:h-[18px] ${
               isWishlisted
-                ? 'text-red-500 fill-current'
-                : 'text-gray-400 hover:text-red-400'
+                ? "text-red-500 fill-current"
+                : "text-gray-400 hover:text-red-400"
             } transition-colors duration-200`}
           />
         </button>
       </div>
-      
+
       {/* Product Info - Responsive Padding and Typography */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow">
         <h3 className="font-medium text-gray-800 text-[12px] lg:text-[14px] sm:text-base line-clamp-2 leading-relaxed min-h-[2rem] sm:min-h-[3rem]">
@@ -63,23 +74,17 @@ const ProductCard = ({ product, onWishlistToggle }) => {
 
         {/* Price - Responsive Typography */}
         <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="text-base sm:text-lg text-[14px] lg:text-[16px] font-bold text-gray-900">
-            ${product.price}
+          <span className="flex items-center text-base sm:text-lg text-[14px] lg:text-[16px] font-bold text-gray-900">
+            <IndianRupee width={15} height={15} />
+            {product.variant[0].price}
           </span>
-          {product.originalPrice && (
-            <span className="text-sm text-gray-400 line-through">
-              ${product.originalPrice}
-            </span>
-          )}
         </div>
-        
+
         {/* Star Rating - Responsive Size */}
         <div className="flex items-center gap-1">
-          <div className="flex">
-            {renderStars(product.rating)}
-          </div>
+          <div className="flex">{renderStars(averageRating)}</div>
           <span className="text-xs text-gray-500 ml-1">
-            ({product.reviews})
+            ({product.reviews?.length || 0})
           </span>
         </div>
       </div>

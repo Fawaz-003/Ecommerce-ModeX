@@ -4,7 +4,7 @@ const Loading = ({ message = "Loading...", variant = "red" }) => {
   const color = loaderColors[variant] || loaderColors.red;
 
   return (
-    <div className="fixed inset-0 bg-gray-100/40 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-gray-800/10 flex justify-center items-center z-50">
       <div className="flex flex-row gap-5 bg-white p-7 px-10 shadow-2xl rounded-xl">
         {/* Spinner */}
         <div

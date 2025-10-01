@@ -15,11 +15,11 @@ import {
   Settings,
 } from "lucide-react";
 import { useAppContext } from "../../../Context/AppContext";
+import { toast } from "react-toastify";
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
     name: "",
-    price: "",
     description: "",
     category: "",
     subcategory: "",
@@ -32,15 +32,11 @@ const AddProducts = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [variants, setVariants] = useState([
-    { size: "", color: "", quantity: "" },
+    { size: "", color: "", price: "", quantity: "" },
   ]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
-
-  const showToast = (message, type = "info") => {
-    console.log(`${type.toUpperCase()}: ${message}`);
-  };
   const { axios } = useAppContext();
 
   useEffect(() => {
@@ -68,7 +64,6 @@ const AddProducts = () => {
       setLoadingCategories(true);
       const response = await axios.get("api/category/list");
       const data = response.data;
-      console.log(data);
 
       if (data.success) {
         setCategories(data.categories || []);
@@ -77,7 +72,6 @@ const AddProducts = () => {
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
-      showToast("Failed to load categories", "error");
       setCategories([]);
     } finally {
       setLoadingCategories(false);
@@ -103,7 +97,7 @@ const AddProducts = () => {
   };
 
   const addVariant = () => {
-    setVariants((prev) => [...prev, { size: "", color: "", quantity: "" }]);
+    setVariants((prev) => [...prev, { size: "", color: "", price: "", quantity: "" }]);
   };
 
   const removeVariant = (index) => {
@@ -116,7 +110,6 @@ const AddProducts = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (images.length + files.length > 4) {
-      showToast("Maximum 4 images allowed", "error");
       return;
     }
 
@@ -146,16 +139,29 @@ const AddProducts = () => {
     const newErrors = {};
 
     if (!productData.name.trim()) newErrors.name = "Product name is required";
-    if (!productData.price || productData.price <= 0)
-      newErrors.price = "Valid price is required";
-    if (!productData.brand.trim()) newErrors.brand = "Brand is required";
-    if (!productData.description.trim())
-      newErrors.description = "Description is required";
+    if (!productData.description.trim()) newErrors.description = "Description is required";
     if (!productData.category) newErrors.category = "Category is required";
-    if (!productData.subcategory)
-      newErrors.subcategory = "Subcategory is required";
-    if (images.length === 0)
-      newErrors.images = "At least one image is required";
+    if (!productData.subcategory) newErrors.subcategory = "Subcategory is required";
+    if (images.length === 0) newErrors.images = "At least one image is required";
+    
+    // Validate variants - at least one complete variant is required
+    const validVariants = variants.filter(v => 
+      v.size.trim() && v.color.trim() && v.price && parseFloat(v.price) > 0 && v.quantity && parseInt(v.quantity) >= 0
+    );
+    
+    if (validVariants.length === 0) {
+      newErrors.variants = "At least one complete variant is required (size, color, price, quantity)";
+    }
+
+    // Validate individual variants
+    variants.forEach((variant, index) => {
+      if (variant.size || variant.color || variant.price || variant.quantity) {
+        if (!variant.size.trim()) newErrors[`variant_${index}_size`] = "Size is required";
+        if (!variant.color.trim()) newErrors[`variant_${index}_color`] = "Color is required";
+        if (!variant.price || parseFloat(variant.price) <= 0) newErrors[`variant_${index}_price`] = "Valid price is required";
+        if (!variant.quantity || parseInt(variant.quantity) < 0) newErrors[`variant_${index}_quantity`] = "Valid quantity is required";
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -164,7 +170,6 @@ const AddProducts = () => {
   const resetForm = () => {
     setProductData({
       name: "",
-      price: "",
       description: "",
       category: "",
       subcategory: "",
@@ -173,7 +178,7 @@ const AddProducts = () => {
       instock: true,
     });
     setImages([]);
-    setVariants([{ size: "", color: "", quantity: "" }]);
+    setVariants([{ size: "", color: "", price: "", quantity: "" }]);
     setErrors({});
     setSubcategories([]);
   };
@@ -185,38 +190,50 @@ const AddProducts = () => {
 
     try {
       const formData = new FormData();
+      
+      // Filter and format variants
+      const validVariants = variants.filter(v => 
+        v.size.trim() && v.color.trim() && v.price && v.quantity
+      ).map(v => ({
+        size: v.size.trim(),
+        color: v.color.trim(),
+        price: parseFloat(v.price),
+        quantity: parseInt(v.quantity)
+      }));
+
       const completeProductData = {
         name: productData.name,
-        price: parseInt(productData.price),
         description: productData.description,
-        category: productData.category,
+        category: productData.category, // This is already ObjectId string
         subcategory: productData.subcategory,
         brand: productData.brand,
         isfeatured: productData.isfeatured,
         instock: productData.instock,
-        variant: variants.filter((v) => v.size || v.color || v.quantity),
+        variant: validVariants,
       };
 
       formData.append("productData", JSON.stringify(completeProductData));
 
-      images.forEach((image, index) => {
+      images.forEach((image) => {
         formData.append("images", image.file);
       });
 
       const response = await axios.post("/api/products/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      const data = response.data;
 
-      if (response.ok) {
-        showToast(data.message || "Product added successfully", "success");
-        resetForm();
-      } else {
-        throw new Error(data.message || "Failed to add product");
-      }
+      toast.success(response.data.message || "Product added successfully",{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
+      setTimeout(() => window.history.back(), 100);
+      resetForm();
     } catch (error) {
       console.error("Error adding product:", error);
-      showToast(error.message || "Error adding product", "error");
+      toast.error(error.response?.data?.message || "Error adding product",{
+          position: "top-right",
+          style: { margin: "45px" },
+        });
     } finally {
       setIsLoading(false);
     }
@@ -232,12 +249,8 @@ const AddProducts = () => {
               <div className="flex items-center gap-3">
                 <Package className="w-8 h-8 text-white" />
                 <div>
-                  <h1 className="text-2xl font-bold text-white">
-                    Add New Product
-                  </h1>
-                  <p className="text-green-100 mt-1">
-                    Create a new product for your store
-                  </p>
+                  <h1 className="text-2xl font-bold text-white">Add New Product</h1>
+                  <p className="text-green-100 mt-1">Create a new product for your store</p>
                 </div>
               </div>
               <button
@@ -252,7 +265,7 @@ const AddProducts = () => {
 
           <div className="p-6 space-y-6">
             {/* Basic Information Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Product Name */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -277,57 +290,20 @@ const AddProducts = () => {
                 )}
               </div>
 
-              {/* Price */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <IndianRupee className="w-4 h-4" />
-                  Price (₹) *
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={productData.price}
-                  onChange={handleInputChange}
-                  min="0"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.price
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="0.00"
-                />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.price}
-                  </p>
-                )}
-              </div>
-
               {/* Brand */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                   <Badge className="w-4 h-4" />
-                  Brand *
+                  Brand
                 </label>
                 <input
                   type="text"
                   name="brand"
                   value={productData.brand}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.brand
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Enter brand name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter brand name (optional)"
                 />
-                {errors.brand && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.brand}
-                  </p>
-                )}
               </div>
             </div>
 
@@ -345,17 +321,11 @@ const AddProducts = () => {
                   onChange={handleInputChange}
                   disabled={loadingCategories}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.category
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  } ${
-                    loadingCategories ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
+                    errors.category ? "border-red-500 bg-red-50" : "border-gray-300"
+                  } ${loadingCategories ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 >
                   <option value="">
-                    {loadingCategories
-                      ? "Loading categories..."
-                      : "Select a category"}
+                    {loadingCategories ? "Loading categories..." : "Select a category"}
                   </option>
                   {categories.map((category) => (
                     <option key={category._id} value={category._id}>
@@ -383,19 +353,11 @@ const AddProducts = () => {
                   onChange={handleInputChange}
                   disabled={!productData.category}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.subcategory
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  } ${
-                    !productData.category
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                    errors.subcategory ? "border-red-500 bg-red-50" : "border-gray-300"
+                  } ${!productData.category ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 >
                   <option value="">
-                    {!productData.category
-                      ? "Select a category first"
-                      : "Select a subcategory"}
+                    {!productData.category ? "Select a category first" : "Select a subcategory"}
                   </option>
                   {subcategories.map((subcategory, index) => (
                     <option key={index} value={subcategory}>
@@ -427,13 +389,9 @@ const AddProducts = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">
-                      Featured Product
-                    </span>
-                  </div>
+                  <span className="text-sm text-gray-700">Featured Product</span>
                 </label>
-
+                
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -442,9 +400,7 @@ const AddProducts = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">In Stock</span>
-                  </div>
+                  <span className="text-sm text-gray-700">In Stock</span>
                 </label>
               </div>
             </div>
@@ -459,12 +415,10 @@ const AddProducts = () => {
                 name="description"
                 value={productData.description}
                 onChange={handleInputChange}
-                placeholder="Latest Apple phone with advanced features..."
+                placeholder="Enter product description..."
                 rows="4"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
-                  errors.description
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300"
+                  errors.description ? "border-red-500 bg-red-50" : "border-gray-300"
                 }`}
               />
               {errors.description && (
@@ -480,7 +434,7 @@ const AddProducts = () => {
               <div className="flex items-center justify-between mb-4">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                   <Package className="w-4 h-4" />
-                  Product Variants
+                  Product Variants *
                 </label>
                 <button
                   type="button"
@@ -492,53 +446,77 @@ const AddProducts = () => {
                 </button>
               </div>
 
+              {errors.variants && (
+                <p className="mb-3 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.variants}
+                </p>
+              )}
+
               {variants.map((variant, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border-gray-300 bg-gray-50 rounded-lg mb-3 border"
-                >
+                <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border-gray-300 bg-gray-50 rounded-lg mb-3 border">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Size
-                    </label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Size *</label>
                     <input
                       type="text"
                       value={variant.size}
-                      onChange={(e) =>
-                        handleVariantChange(index, "size", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="e.g., XL, 42, 256GB"
+                      onChange={(e) => handleVariantChange(index, "size", e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_size`] ? "border-red-500 bg-red-50" : "border-gray-300"
+                      }`}
+                      placeholder="e.g., XL, 42"
                     />
+                    {errors[`variant_${index}_size`] && (
+                      <p className="mt-1 text-xs text-red-600">{errors[`variant_${index}_size`]}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Color
-                    </label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Color *</label>
                     <input
                       type="text"
                       value={variant.color}
-                      onChange={(e) =>
-                        handleVariantChange(index, "color", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      placeholder="e.g., Red, Black, Blue"
+                      onChange={(e) => handleVariantChange(index, "color", e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_color`] ? "border-red-500 bg-red-50" : "border-gray-300"
+                      }`}
+                      placeholder="e.g., Red, Blue"
                     />
+                    {errors[`variant_${index}_color`] && (
+                      <p className="mt-1 text-xs text-red-600">{errors[`variant_${index}_color`]}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Quantity
-                    </label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Price (₹) *</label>
+                    <input
+                      type="number"
+                      value={variant.price}
+                      onChange={(e) => handleVariantChange(index, "price", e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_price`] ? "border-red-500 bg-red-50" : "border-gray-300"
+                      }`}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                    {errors[`variant_${index}_price`] && (
+                      <p className="mt-1 text-xs text-red-600">{errors[`variant_${index}_price`]}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Quantity *</label>
                     <input
                       type="number"
                       value={variant.quantity}
-                      onChange={(e) =>
-                        handleVariantChange(index, "quantity", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      onChange={(e) => handleVariantChange(index, "quantity", e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors[`variant_${index}_quantity`] ? "border-red-500 bg-red-50" : "border-gray-300"
+                      }`}
                       placeholder="0"
                       min="0"
                     />
+                    {errors[`variant_${index}_quantity`] && (
+                      <p className="mt-1 text-xs text-red-600">{errors[`variant_${index}_quantity`]}</p>
+                    )}
                   </div>
                   <div className="flex items-end">
                     {variants.length > 1 && (
@@ -561,7 +539,7 @@ const AddProducts = () => {
                 <Upload className="w-4 h-4" />
                 Product Images (Upload up to 4 images) *
               </label>
-
+              
               <div className="space-y-4">
                 {/* Upload Area */}
                 <div className="relative">
@@ -585,24 +563,20 @@ const AddProducts = () => {
                     }`}
                   >
                     <div className="text-center">
-                      <Plus
-                        className={`w-8 h-8 mx-auto mb-2 ${
-                          images.length >= 4
-                            ? "text-gray-300"
-                            : errors.images
-                            ? "text-red-400"
-                            : "text-blue-400"
-                        }`}
-                      />
-                      <p
-                        className={`${
-                          images.length >= 4
-                            ? "text-gray-400"
-                            : errors.images
-                            ? "text-red-600"
-                            : "text-gray-600"
-                        }`}
-                      >
+                      <Plus className={`w-8 h-8 mx-auto mb-2 ${
+                        images.length >= 4 
+                          ? "text-gray-300" 
+                          : errors.images 
+                          ? "text-red-400"
+                          : "text-blue-400"
+                      }`} />
+                      <p className={`${
+                        images.length >= 4 
+                          ? "text-gray-400" 
+                          : errors.images 
+                          ? "text-red-600"
+                          : "text-gray-600"
+                      }`}>
                         {images.length >= 4
                           ? "Maximum 4 images reached"
                           : "Click to upload images or drag and drop"}
