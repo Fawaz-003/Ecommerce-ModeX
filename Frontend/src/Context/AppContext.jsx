@@ -1,37 +1,30 @@
-import React, { createContext, useMemo, useState, useContext } from "react";
+import { createContext, useMemo, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosLib from "axios";
 
 export const AppContext = createContext({
   user: null,
   setUser: () => {},
+  backendURL: "",
 });
 
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
-  const value = useMemo(() => ({ user, setUser }), [user]);
-
-  return (
-    <AppContext.Provider value={value}>
-      {children}
-    </AppContext.Provider>
-  );
-};
-
-export const useAppContext = () => {
-  const ctx = useContext(AppContext);
   const navigate = useNavigate();
 
+  const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
   const axios = useMemo(() => {
-    const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-    const instance = axiosLib.create({
-      baseURL,
+    return axiosLib.create({
+      baseURL: backendURL,
       withCredentials: true,
       headers: { "Content-Type": "application/json" },
     });
-    return instance;
-  }, []);
+  }, [backendURL]);
 
-  return { ...ctx, axios, navigate };
+  const value = useMemo(() => ({ user, setUser, axios, navigate, backendURL }), [user, axios, navigate, backendURL]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
+
+export const useAppContext = () => useContext(AppContext);

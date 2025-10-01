@@ -20,7 +20,7 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const data = res.data; // axios automatically parses JSON
+      const data = res.data;
 
       toast.success(data.message, {
         position: "top-right",

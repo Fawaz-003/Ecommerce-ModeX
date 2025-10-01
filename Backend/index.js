@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import 'dotenv/config'
+import 'dotenv/config';
+import passport from 'passport';
+import './config/passport.js'; // <- Google OAuth config
 import connectDB from './config/mongodb.js';
-import connectCloudinary from './config/cloudinary.js';
+// import connectCloudinary from './config/cloudinary.js';
 import userRouter from './routes/userRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
 import productRouter from './routes/productRoutes.js';
@@ -15,10 +17,10 @@ const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
   process.env.FRONTEND_URLS,
   'http://localhost:5173'
-]
+];
 
 connectDB();
-connectCloudinary();
+// connectCloudinary();
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -31,15 +33,14 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));
-
 app.use(express.json());
+app.use(passport.initialize());
 
 app.use('/api/users', userRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/products', productRouter);
 app.use('/api/category', categoryRouter);
 
- 
 app.get('/ping', (req, res) => {
   res.status(200).json({ ok: true });
 });
