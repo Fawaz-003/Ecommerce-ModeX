@@ -20,7 +20,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 connectDB();
-// connectCloudinary();
+connectCloudinary();
 
 const corsOptions = {
   origin: function (origin, callback) {
