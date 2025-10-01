@@ -24,6 +24,10 @@ import AdminUsers from "./Pages/Admin/AdminPages/AdminUsers";
 import AdminMenu from "./Pages/Admin/Components/AdminMenu";
 import AddProducts from "./Pages/Admin/Actions/AddProducts";
 import EditProducts from "./Pages/Admin/Actions/EditProducts";
+import AdminSettings from "./Pages/Admin/AdminPages/AdminSettings";
+import AdminCategory from "./Pages/Admin/AdminPages/AdminCategory";
+import AddCategory from "./Pages/Admin/Actions/AddCategory";
+import EditCategory from "./Pages/Admin/Actions/EditCategory";
 
 import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
@@ -96,6 +100,12 @@ const App = () => {
           </Route>
           <Route path="users" element={<AdminUsers />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="categories">
+            <Route index element={<AdminCategory />} />
+            <Route path="addcategory" element={<AddCategory />} />
+            <Route path="editcategory/:id" element={<EditCategory />} />
+          </Route>
         </Route>
       </Routes>
 
