@@ -43,7 +43,7 @@ export default function CategoryListing() {
         // ✅ Green toast for success
         toast.success(response.data.message || "Category deleted successfully", {
           position: "top-right",
-          style: { margin: "45px", backgroundColor: "#4CAF50", color: "#fff" },
+          style: { margin: "45px" },
         });
       } else {
         toast.error(response.data.message || "Failed to delete category", {

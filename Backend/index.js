@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import passport from 'passport';
-import './config/passport.js'; // <- Google OAuth config
+import './config/passport.js';
 import connectDB from './config/mongodb.js';
-// import connectCloudinary from './config/cloudinary.js';
+import connectCloudinary from './config/cloudinary.js';
 import userRouter from './routes/userRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
 import productRouter from './routes/productRoutes.js';
