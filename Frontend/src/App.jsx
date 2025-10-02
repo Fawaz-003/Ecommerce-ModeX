@@ -33,18 +33,13 @@ import { ToastContainer } from "react-toastify";
 import UserRoute from "./Routes/UersRoute";
 import { useAppContext } from "./Context/AppContext";
 import ProductDetail from "./Layout/ProductDetail";
+import AuthSuccess from "./Pages/Users/AuthSuccess";
 
 const App = () => {
   const location = useLocation();
   const { axios } = useAppContext();
-
-  // MobileFilter state
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-
-  // Hide Navbar & Footer on admin routes
   const hideNavAndFooter = location.pathname.startsWith("/admin");
-
-  // Hide BottomNav on admin, login, register pages, or when MobileFilter is open
   const hideBottomNav =
     location.pathname.startsWith("/admin") ||
     isMobileFilterOpen;
@@ -74,6 +69,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/wishlist" element={<WishList />} />
+        <Route path="/auth-success" element={<AuthSuccess />} />
         <Route
           path="/profile"
           element={

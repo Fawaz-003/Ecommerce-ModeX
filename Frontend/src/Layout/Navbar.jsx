@@ -31,8 +31,7 @@ const Navbar = () => {
       }
     };
     checkAuth();
-
-    // optional: listen to storage events across tabs
+    
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
