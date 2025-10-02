@@ -6,7 +6,7 @@ import { useAppContext } from "../../Context/AppContext.jsx";
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { axios, navigate } = useAppContext();
+  const { axios, navigate, backendURL } = useAppContext();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -205,10 +205,13 @@ const Register = () => {
             </div>
 
             {/* Social Login Buttons */}
-            <div className="mt-2 grid grid-cols-1 gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-3">
               <button
                 type="button"
                 className="w-full flex items-center gap-2 justify-center my-3 bg-white border border-gray-500/30 py-2.5 rounded-full text-gray-800"
+                onClick={() =>
+                  window.open(`${backendURL}/api/users/google`, "_self")
+                }
               >
                 <img
                   className="h-4 w-4"
