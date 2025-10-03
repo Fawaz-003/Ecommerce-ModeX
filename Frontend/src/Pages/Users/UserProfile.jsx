@@ -17,8 +17,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Logout from "../Admin/Actions/Logout";
+import { useAppContext } from "../../Context/AppContext.jsx";
 
-export default function EcommerceProfilePage() {
+export default function UserProfile() {
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -31,6 +32,7 @@ export default function EcommerceProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
+  const { axios } = useAppContext();
   const [userStats, setUserStats] = useState({
     totalOrders: 0,
     wishlistItems: 0,
@@ -44,15 +46,11 @@ export default function EcommerceProfilePage() {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/users/login");
+      const response = localStorage.getItem("user");
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser((prevUser) => ({
-          ...prevUser,
-          name: userData.name || "",
-          email: userData.email || "",
-        }));
+      if (response) {
+        const userData = JSON.parse(response);
+        setUser(userData);
       } else {
         console.error("Failed to fetch user data");
       }
@@ -116,7 +114,7 @@ export default function EcommerceProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4 border-b bg-blue-50">
+              <div className="p-4 bg-blue-50">
                 <div className="flex items-center">
                   <div className="relative">
                     <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
@@ -173,7 +171,7 @@ export default function EcommerceProfilePage() {
 
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm">
-              <div className="p-6 border-b">
+              <div className="p-6">
                 <div className="flex items-center justify-between">
                   <h1 className="text-2xl font-bold text-gray-900">
                     Personal Information
