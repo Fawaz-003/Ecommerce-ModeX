@@ -8,7 +8,7 @@ import Contact from "./Pages/Contact";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Users/Login";
 import Register from "./Pages/Users/Register";
-import Profile from "./Pages/Users/Profile";
+import UserProfile from "./Pages/Users/UserProfile";
 import WishList from "./Pages/WishList";
 
 import Navbar from "./Layout/Navbar";
@@ -74,7 +74,7 @@ const App = () => {
           path="/profile"
           element={
             <UserRoute>
-              <Profile />
+              <UserProfile />
             </UserRoute>
           }
         />

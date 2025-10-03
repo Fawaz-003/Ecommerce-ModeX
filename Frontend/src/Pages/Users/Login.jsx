@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../Context/AppContext.jsx";
@@ -8,7 +8,34 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const { axios, navigate, backendURL } = useAppContext();
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem("user-token");
+      const userStr = localStorage.getItem("user");
+      
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          // If user is authenticated, redirect to appropriate page
+          if (user && user.role === 1) {
+            navigate("/admin/dashboard");
+          } else if (user && user.role === 0) {
+            navigate("/profile");
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          // If there's an error parsing user data, continue to login page
+        }
+      }
+      setCheckingAuth(false);
+    };
+
+    checkAuthStatus();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,6 +74,22 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#eff0f0] flex flex-col justify-center py-5 sm:px-5 lg:px-5">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white mx-3 py-8 px-4 shadow-sm rounded-lg sm:px-10 border border-gray-200">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Checking authentication...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#eff0f0] flex flex-col justify-center py-5 sm:px-5 lg:px-5">

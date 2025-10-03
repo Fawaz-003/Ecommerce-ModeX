@@ -7,11 +7,29 @@ const UserRoute = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("user-token");
-    const user = JSON.parse(localStorage.getItem("user"));
+    const userStr = localStorage.getItem("user");
+    
+    if (!token) {
+      setIsAuthorized(false);
+      setLoading(false);
+      return;
+    }
 
-    if (token && user?.role === 0) {
-      setIsAuthorized(true);
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // Check if user exists and has role 0 (regular user)
+        if (user && user.role === 0) {
+          setIsAuthorized(true);
+        } else {
+          setIsAuthorized(false);
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        setIsAuthorized(false);
+      }
     } else {
+      // If no user data in localStorage but token exists, user is not authorized
       setIsAuthorized(false);
     }
 
