@@ -8,7 +8,7 @@ import Contact from "./Pages/Contact";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Users/Login";
 import Register from "./Pages/Users/Register";
-import UserProfile from "./Pages/Users/UserProfile";
+import UserProfile from "./Pages/Users/UserProfile/UserProfileLayout";
 import WishList from "./Pages/WishList";
 
 import Navbar from "./Layout/Navbar";

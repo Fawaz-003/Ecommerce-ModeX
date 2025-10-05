@@ -1,4 +1,4 @@
-import { loaderColors } from "../../../../colors.js";
+import { loaderColors } from "../../colors.js";
 
 const Loading = ({ message = "Loading...", variant = "red" }) => {
   const color = loaderColors[variant] || loaderColors.red;

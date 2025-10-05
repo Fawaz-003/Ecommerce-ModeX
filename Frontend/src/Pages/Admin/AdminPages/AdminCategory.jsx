@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../../../Context/AppContext";
 import { toast } from "react-toastify";
 import { Plus, Edit3, Trash2, Folder } from "lucide-react";
-import OpenModel from "../Components/OpenModel.jsx";
-import Loading from "../Components/Loading.jsx";
+import OpenModel from "../../../Components/OpenModel.jsx";
+import Loading from "../../../Components/Loading.jsx";
 
 export default function CategoryListing() {
   const [categories, setCategories] = useState([]);

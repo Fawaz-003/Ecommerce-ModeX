@@ -18,20 +18,20 @@ const features = [
 const Template3 = () => {
   return (
     <div>
-      <div className="w-full h-[75vh] flex flex-col lg:flex-row justify-center items-center bg-gradient-to-br from-[#6366f1] via-[#8b5cf6] to-[#a855f7] p-4 lg:p-0 overflow-hidden">
+      <div className="w-full h-[67vh] lg:h-[60vh] flex flex-col lg:flex-row justify-center items-center bg-gradient-to-br from-[#6366f1] via-[#8b5cf6] to-[#a855f7] p-4 lg:p-0 overflow-hidden">
         {/* Left Side - Content */}
-        <div className="w-full lg:w-[50%] flex flex-col items-center lg:items-start text-center lg:text-left px-4 lg:px-16 xl:px-24 mb-6 lg:mb-0 lg:ml-8 xl:ml-16">
-          <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold text-white leading-tight">
-            Power Meets <br/> 
-            <span className="text-[#f59e0b]">Performance.</span>
+        <div className="w-full lg:w-[50%] flex flex-col items-center lg:items-start text-center md:pl-20">
+          <h1 className="text-xl mt-2 md:text-2xl lg:text-3xl font-bold text-white leading-tight">
+            Power Meets  
+            <span className="text-[#f59e0b]"> Performance.</span>
           </h1>
-          <h2 className="text-lg md:text-2xl lg:text-4xl font-medium mt-2 lg:mt-5 text-[#f3f4f6]">
+          <h2 className="text-lg md:text-2xl lg:text-3xl font-medium lg:mt-5 text-[#f3f4f6]">
             Summer Sale Up to <span className="text-[#f59e0b] font-bold">50%</span> Off!
           </h2>
-          <p className="text-sm md:text-base lg:text-lg mt-2 lg:mt-5 text-[#e5e7eb] max-w-md leading-relaxed">
+          <p className="text-[12px] md:text-base lg:text-m lg:mt-5 text-[#e5e7eb] max-w-md leading-relaxed">
             Experience the next generation of laptops built for creators, gamers, and professionals.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 mt-4 lg:mt-8 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 mt-4 mb-4 lg:mt-8 w-full sm:w-auto">
             <Button
               icon={ShoppingBag}
               text="Explore Fashion"
@@ -46,8 +46,8 @@ const Template3 = () => {
         </div>
 
         {/* Right Side - Product Display */}
-        <div className="relative w-full lg:w-[50%] flex justify-center items-center lg:pr-8 xl:pr-16">
-          <div className="relative bg-gradient-to-br from-[#f2cc34] via-[#e77e06] to-[#ed7804] p-4 md:p-6 rounded-3xl lg:rounded-l-full shadow-2xl border-2 border-[#f59e0b]/20 flex flex-col md:flex-row items-center w-full max-w-lg lg:max-w-none lg:min-h-[45vh] backdrop-blur-sm">
+        <div className="relative w-full lg:w-[50%] flex justify-center items-center">
+          <div className="relative rounded-xl bg-gradient-to-br from-[#f2cc34] via-[#e77e06] to-[#ed7804] p-4 lg:rounded-l-full shadow-2xl border-2 border-[#f59e0b]/20 flex flex-col md:flex-row items-center backdrop-blur-sm">
             
             {/* Discount Badge - Smaller on mobile */}
             <div className="absolute -top-2 md:-top-6 left-1/2 md:left-8 transform -translate-x-1/2 md:translate-x-0 z-20 animate-bounce">
@@ -76,11 +76,11 @@ const Template3 = () => {
 
             {/* Features List */}
             <div className="w-full md:w-auto">
-              <ul className="grid grid-cols-2 md:grid-cols-1 gap-2 md:gap-4">
+              <ul className="grid grid-cols-2 md:grid-cols-1 gap-2 md:gap-2">
                 {features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center text-xs md:text-sm lg:text-base text-[#1f2937] font-semibold">
-                    <CheckCircle className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 mr-1 md:mr-2 text-[#0f23fd] flex-shrink-0 drop-shadow-sm" />
-                    <span className="text-xs md:text-sm lg:text-base drop-shadow-sm">{feature}</span>
+                  <li key={idx} className="flex items-center text-xs md:text-xs lg:text-base text-[#1f2937] font-semibold">
+                    <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-1 text-[#0f23fd] flex-shrink-0 drop-shadow-sm" />
+                    <span className="text-[10px] md:text-[15px] drop-shadow-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
