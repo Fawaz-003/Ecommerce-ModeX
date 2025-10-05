@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../Context/AppContext.jsx";
-import Loading from "../Admin/Components/Loading.jsx";
+import Loading from "../../Components/Loading.jsx";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });

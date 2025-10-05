@@ -9,17 +9,18 @@ import userRouter from "./routes/userRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import categoryRouter from "./routes/categoryRoutes.js";
+import userProfileRouter from "./routes/userProfileRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const ALLOWED_ORIGINS = [process.env.CLIENT_URL, "http://localhost:5173"];
+const ALLOWED_ORIGINS = [process.env.CLIENT_URL];
 
 connectDB();
 connectCloudinary();
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: function (origin, callback) {   
     if (!origin) return callback(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
     return callback(new Error("Not allowed by CORS"));
@@ -36,6 +37,7 @@ app.use("/api/users", userRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/products", productRouter);
 app.use("/api/category", categoryRouter);
+app.use("/api/profile", userProfileRouter);
 
 app.get("/ping", (req, res) => {
   res.status(200).json({ ok: true });

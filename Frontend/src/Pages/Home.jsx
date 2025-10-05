@@ -130,12 +130,12 @@ const Home = () => {
       {/* 🔹 Main Carousel */}
       <div
         ref={containerRef}
-        className="relative w-full overflow-hidden h-[70vh]"
+        className="relative lg:w-[70%] overflow-hidden h-[67vh] lg:h-[60vh] px-3 lg:px-8 rounded-lg lg:rounded-2xl"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="relative w-full overflow-hidden h-[70vh]">
+        <div className="relative lg:w-full overflow-hidden h-[67vh] lg:h-[60vh] lg:px-8 rounded-lg lg:rounded-2xl">
           {templates.map((template, index) => (
             <div
               key={template.id}
@@ -161,7 +161,7 @@ const Home = () => {
         {/* Navigation buttons - Hidden on mobile */}
         <button
           onClick={goToPrevious}
-          className="hidden md:block absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+          className="hidden md:block absolute left-14 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
           aria-label="Previous slide"
         >
           <ChevronLeft size={24} />
@@ -169,7 +169,7 @@ const Home = () => {
 
         <button
           onClick={goToNext}
-          className="hidden md:block absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+          className="hidden md:block absolute right-14 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
           aria-label="Next slide"
         >
           <ChevronRight size={24} />

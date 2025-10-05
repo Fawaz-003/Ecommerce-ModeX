@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../../../Context/AppContext.jsx";
 import { Package, Plus, Search, Filter, Edit3, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
-import OpenModel from "../Components/OpenModel.jsx";
-import Loading from "../Components/Loading.jsx";
+import OpenModel from "../../../Components/OpenModel.jsx";
+import Loading from "../../../Components/Loading.jsx";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);

@@ -10,7 +10,7 @@ import {
   Settings,
   BookCopy,
 } from "lucide-react";
-import Logout from "../Actions/Logout";
+import Logout from "../../../Components/Logout";
 
 const AdminSidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

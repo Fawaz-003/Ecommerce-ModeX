@@ -73,105 +73,107 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="max-w-8xl w-full px-6 py-2 lg:px-16 lg:py-8">
-      <p>
-        <span>Home</span> / <span> Products</span> /{" "}
-        <span>{fetchProduct.subcategory}</span> /
-        <span className="text-indigo-500"> {fetchProduct?.name}</span>
-      </p>
+    <div className="flex justify-center">
+      <div className="max-w-7xl w-full px-6 py-2 lg:px-20 lg:py-8 bg-gray-50">
+        <p>
+          <span>Home</span> / <span> Products</span> /{" "}
+          <span>{fetchProduct.subcategory}</span> /
+          <span className="text-indigo-500"> {fetchProduct?.name}</span>
+        </p>
 
-      <div className="flex flex-col md:flex-row gap-16 mt-4">
-        <div className="flex gap-3">
-          <div className="flex flex-col gap-3">
-            {fetchProduct.images?.map((image, index) => (
-              <div
-                key={index}
-                onClick={() => setThumbnail(image.url)}
-                className="border max-w-24 border-gray-500/30 rounded overflow-hidden cursor-pointer"
-              >
-                <img src={image.url} alt={`Thumbnail ${index + 1}`} />
-              </div>
-            ))}
-          </div>
-
-          <div className="border border-gray-500/30 max-w-100 rounded overflow-hidden">
-            <img
-              src={thumbnail}
-              alt="Selected product"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div className="text-sm w-full md:w-1/2">
-          <h1 className="text-4xl mb-5 font-medium">{fetchProduct.name}</h1>
-
-          <div className="flex items-center gap-1 mb-4">
-            <div className="flex">{renderStars(averageRating)}</div>
-            <span className="text-xs text-gray-500 ml-1">
-              ({fetchProduct.reviews?.length || 0})
-            </span>
-          </div>
-
-          {selectedVariant && (
-            <div className="mb-4">
-              <p className="text-3xl font-semibold text-gray-900 flex items-center gap-1">
-                <IndianRupee />{selectedVariant.price}
-              </p>
-            </div>
-          )}
-
-          <div className="mt-6">
-            {colors.length > 0 && (
-              <div className="mb-4">
-                <p className="font-medium mb-2">Color:</p>
-                <div className="flex gap-2">
-                  {colors.map((color, index) => (
-                    <button
-                      key={index}
-                      className={`w-8 h-8 rounded-full border-2 transition ${
-                        selectedColor === color
-                          ? "border-black scale-110"
-                          : "border-gray-300"
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => {
-                        setSelectedColor(color);
-                        const firstAvailableSize = fetchProduct.variant.find(
-                          (v) => v.color === color
-                        )?.size;
-
-                        if (firstAvailableSize) {
-                          setSelectedSize(firstAvailableSize);
-                          setSelectedVariant(
-                            fetchProduct.variant.find(
-                              (v) =>
-                                v.color === color &&
-                                v.size === firstAvailableSize
-                            )
-                          );
-                        }
-                      }}
-                    ></button>
-                  ))}
+        <div className="flex flex-col md:flex-row gap-16 mt-4">
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
+              {fetchProduct.images?.map((image, index) => (
+                <div
+                  key={index}
+                  onClick={() => setThumbnail(image.url)}
+                  className="border max-w-24 border-gray-500/30 rounded overflow-hidden cursor-pointer"
+                >
+                  <img src={image.url} alt={`Thumbnail ${index + 1}`} />
                 </div>
+              ))}
+            </div>
+
+            <div className="border border-gray-500/30 max-w-100 rounded overflow-hidden">
+              <img
+                src={thumbnail}
+                alt="Selected product"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          <div className="text-sm w-full md:w-1/2">
+            <h1 className="text-4xl mb-5 font-medium">{fetchProduct.name}</h1>
+
+            <div className="flex items-center gap-1 mb-4">
+              <div className="flex">{renderStars(averageRating)}</div>
+              <span className="text-xs text-gray-500 ml-1">
+                ({fetchProduct.reviews?.length || 0})
+              </span>
+            </div>
+
+            {selectedVariant && (
+              <div className="mb-4">
+                <p className="text-3xl font-semibold text-gray-900 flex items-center gap-1">
+                  <IndianRupee />
+                  {selectedVariant.price}
+                </p>
               </div>
             )}
 
-            {sizes.length > 0 && (
-              <div className="mb-4">
-                <p className="font-medium mb-2">Size:</p>
-                <div className="flex gap-2">
-                  {sizes.map((size, index) => {
-                    const isAvailable = fetchProduct.variant.some(
-                      (v) => v.color === selectedColor && v.size === size
-                    );
-
-                    return (
+            <div className="mt-6">
+              {colors.length > 0 && (
+                <div className="mb-4">
+                  <p className="font-medium mb-2">Color:</p>
+                  <div className="flex gap-2">
+                    {colors.map((color, index) => (
                       <button
                         key={index}
-                        disabled={!isAvailable}
-                        className={`px-4 py-2 rounded-lg border transition 
+                        className={`w-8 h-8 rounded-full border-2 transition ${
+                          selectedColor === color
+                            ? "border-black scale-110"
+                            : "border-gray-300"
+                        }`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => {
+                          setSelectedColor(color);
+                          const firstAvailableSize = fetchProduct.variant.find(
+                            (v) => v.color === color
+                          )?.size;
+
+                          if (firstAvailableSize) {
+                            setSelectedSize(firstAvailableSize);
+                            setSelectedVariant(
+                              fetchProduct.variant.find(
+                                (v) =>
+                                  v.color === color &&
+                                  v.size === firstAvailableSize
+                              )
+                            );
+                          }
+                        }}
+                      ></button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {sizes.length > 0 && (
+                <div className="mb-4">
+                  <p className="font-medium mb-2">Size:</p>
+                  <div className="flex gap-2">
+                    {sizes.map((size, index) => {
+                      const isAvailable = fetchProduct.variant.some(
+                        (v) => v.color === selectedColor && v.size === size
+                      );
+
+                      return (
+                        <button
+                          key={index}
+                          disabled={!isAvailable}
+                          className={`px-4 py-2 rounded-lg border transition 
               ${
                 selectedSize === size && isAvailable
                   ? "bg-indigo-500 text-white border-indigo-600"
@@ -179,42 +181,43 @@ const ProductDetail = () => {
                   ? "border-gray-300 hover:bg-gray-100"
                   : "bg-gray-200 text-gray-400 border-gray-200 cursor-not-allowed"
               }`}
-                        onClick={() => isAvailable && setSelectedSize(size)}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
+                          onClick={() => isAvailable && setSelectedSize(size)}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {selectedVariant && (
+              <div className="mb-4">
+                <p
+                  className={`${
+                    selectedVariant.quantity > 0
+                      ? "text-blue-600"
+                      : "text-red-500"
+                  }`}
+                >
+                  {selectedVariant.quantity > 0
+                    ? `Stocks lefted ${selectedVariant.quantity}`
+                    : "Out of Stock"}
+                </p>
               </div>
             )}
-          </div>
+            <p className="text-base font-medium mt-6">About Product</p>
+            <p className="text-gray-600">{fetchProduct.description}</p>
 
-          {selectedVariant && (
-            <div className="mb-4">
-              <p
-                className={`${
-                  selectedVariant.quantity > 0
-                    ? "text-blue-600"
-                    : "text-red-500"
-                }`}
-              >
-                {selectedVariant.quantity > 0
-                  ? `Stocks lefted ${selectedVariant.quantity}`
-                  : "Out of Stock"}
-              </p>
+            <div className="flex items-center mt-10 gap-4 text-base">
+              <button className="w-full py-3.5 cursor-pointer font-medium bg-gray-200 text-gray-800 hover:bg-gray-300 transition">
+                Add to Cart
+              </button>
+              <button className="w-full py-3.5 cursor-pointer font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition">
+                Buy now
+              </button>
             </div>
-          )}
-          <p className="text-base font-medium mt-6">About Product</p>
-          <p className="text-gray-600">{fetchProduct.description}</p>
-
-          <div className="flex items-center mt-10 gap-4 text-base">
-            <button className="w-full py-3.5 cursor-pointer font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition">
-              Add to Cart
-            </button>
-            <button className="w-full py-3.5 cursor-pointer font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition">
-              Buy now
-            </button>
           </div>
         </div>
       </div>
