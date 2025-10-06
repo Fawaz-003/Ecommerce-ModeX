@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../Context/AppContext";
-import { Heart, IndianRupee, Star } from "lucide-react";
+import { IndianRupee, Star } from "lucide-react";
 
 const ProductDetail = () => {
   const { id: productId } = useParams();
