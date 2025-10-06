@@ -10,6 +10,7 @@ import adminRouter from "./routes/adminRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import categoryRouter from "./routes/categoryRoutes.js";
 import userProfileRouter from "./routes/userProfileRoutes.js";
+import wishlistRouter from "./routes/wishlistRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/products", productRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/profile", userProfileRouter);
+app.use("/api/wishlist", wishlistRouter);
 
 app.get("/ping", (req, res) => {
   res.status(200).json({ ok: true });

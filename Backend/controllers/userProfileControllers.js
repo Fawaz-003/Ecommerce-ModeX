@@ -48,4 +48,8 @@ const getProfile = async (req, res) => {
   }
 };
 
-export { createEditProfile, getProfile };
+const userWishlist = async (req, res) => {
+  const productId = req.params
+}
+
+export { createEditProfile, getProfile, userWishlist };
