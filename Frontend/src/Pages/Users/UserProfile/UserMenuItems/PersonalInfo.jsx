@@ -30,10 +30,31 @@ const PersonalInfo = () => {
   const handleInputChange = (field, value) => {
     setUser((prev) => ({ ...prev, [field]: value }));
   };
-  const handleSave = () => {
-    console.log("Saving user data:", user);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const userId = user.id;
+      const updatedData = {
+        phone: userProfile.phone,
+        gender: userProfile.gender,
+        dateOfBirth: userProfile.dateOfBirth,
+      };
+
+      const response = await axios.put(
+        `/api/profile/edit/${userId}`,
+        updatedData
+      );
+      console.log("Profile updated successfully:", response.data);
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
+
+  const handleProfileChange = (field, value) => {
+    setUserProfile((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleCancel = () => {
     setIsEditing(false);
     setImagePreview(null);
@@ -49,11 +70,30 @@ const PersonalInfo = () => {
     try {
       const response = await axios.get(`/api/profile/${userId}`);
       const data = response.data.profile;
-      setUserProfile(data);
+      let formattedDate = "";
+      if (data.dateOfBirth) {
+        const dateObj = new Date(data.dateOfBirth);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+        formattedDate = `${day}/${month}/${year}`;
+      }
+
+      setUserProfile({
+        phone: data.phone || "",
+        gender: data.gender || "",
+        dateOfBirth: formattedDate || "",
+        profileImage: data.profileImage || null,
+      });
+
       console.log("User profile data:", data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
   return (
@@ -65,7 +105,7 @@ const PersonalInfo = () => {
           </h1>
           {!isEditing ? (
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={handleEdit}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Edit3 className="w-4 h-4" /> Edit
@@ -170,7 +210,7 @@ const PersonalInfo = () => {
               <input
                 type="tel"
                 value={userProfile.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
+                onChange={(e) => handleProfileChange("phone", e.target.value)}
                 placeholder="Enter your phone number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -187,7 +227,7 @@ const PersonalInfo = () => {
             {isEditing ? (
               <select
                 value={userProfile.gender}
-                onChange={(e) => handleInputChange("gender", e.target.value)}
+                onChange={(e) => handleProfileChange("gender", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select Gender</option>
@@ -208,15 +248,19 @@ const PersonalInfo = () => {
             {isEditing ? (
               <input
                 type="date"
-                value={userProfile.dob}
+                value={
+                  userProfile.dateOfBirth
+                    ? userProfile.dateOfBirth.split("/").reverse().join("-")
+                    : ""
+                }
                 onChange={(e) =>
-                  handleInputChange("dateOfBirth", e.target.value)
+                  handleProfileChange("dateOfBirth", e.target.value)
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             ) : (
               <p className="text-gray-500 py-2">
-                {userProfile.dob || "Not provided"}
+                {userProfile.dateOfBirth || "Not provided"}
               </p>
             )}
           </div>
