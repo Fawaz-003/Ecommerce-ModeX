@@ -43,7 +43,6 @@ const PersonalInfo = () => {
         `/api/profile/edit/${userId}`,
         updatedData
       );
-      console.log("Profile updated successfully:", response.data);
 
       setIsEditing(false);
     } catch (error) {
@@ -85,8 +84,6 @@ const PersonalInfo = () => {
         dateOfBirth: formattedDate || "",
         profileImage: data.profileImage || null,
       });
-
-      console.log("User profile data:", data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
