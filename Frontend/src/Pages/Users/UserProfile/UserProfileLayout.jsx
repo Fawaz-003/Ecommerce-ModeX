@@ -30,10 +30,7 @@ const UserProfile = () => {
   const [user, setUser] = useState({
     name: "",
     email: "",
-    phone: "",
-    gender: "",
-    dateOfBirth: "",
-    profileImage: null,
+    avatar: "",
   });
 
   useEffect(() => {
@@ -103,9 +100,9 @@ const UserProfile = () => {
               <div className="flex items-center">
                 <div className="relative">
                   <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                    {imagePreview || user.profileImage ? (
+                    {imagePreview || user.avatar ? (
                       <img
-                        src={imagePreview || user.profileImage}
+                        src={imagePreview || user.avatar}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
