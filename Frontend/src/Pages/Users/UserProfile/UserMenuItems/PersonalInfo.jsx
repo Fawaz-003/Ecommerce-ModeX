@@ -6,6 +6,7 @@ const PersonalInfo = () => {
   const [user, setUser] = useState({
     name: "",
     email: "",
+    avatar: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -13,7 +14,6 @@ const PersonalInfo = () => {
     phone: "",
     gender: "",
     dateOfBirth: "",
-    profileImage: null,
   });
   const { axios } = useAppContext();
   const handleImageUpload = (event) => {
@@ -22,7 +22,6 @@ const PersonalInfo = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
-        setUser((prev) => ({ ...prev, profileImage: file }));
       };
       reader.readAsDataURL(file);
     }
@@ -82,7 +81,6 @@ const PersonalInfo = () => {
         phone: data.phone || "",
         gender: data.gender || "",
         dateOfBirth: formattedDate || "",
-        profileImage: data.profileImage || null,
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -130,9 +128,9 @@ const PersonalInfo = () => {
           <div className="md:col-span-2 flex items-center gap-4">
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
-                {imagePreview || user.profileImage ? (
+                {imagePreview || user.avatar ? (
                   <img
-                    src={imagePreview || user.profileImage}
+                    src={imagePreview || user.avatar}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
