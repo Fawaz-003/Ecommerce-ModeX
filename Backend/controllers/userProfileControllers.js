@@ -1,5 +1,22 @@
 import UserProfile from "../models/userProfileModels.js";
 
+const createProfile = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const existingProfile = await UserProfile.findOne({ user: userId });
+    if (userId) {
+      const profile = await UserProfile.create({
+        user: userId,
+      });
+
+      if (existingProfile) {
+        res.status(200).json({ success: true, existingProfile });
+      }
+      res.status(201).json({ success: true, profile });
+    }
+  } catch (error) {}
+};
+
 const createEditProfile = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -48,8 +65,4 @@ const getProfile = async (req, res) => {
   }
 };
 
-const userWishlist = async (req, res) => {
-  const productId = req.params
-}
-
-export { createEditProfile, getProfile, userWishlist };
+export { createProfile, createEditProfile, getProfile };
