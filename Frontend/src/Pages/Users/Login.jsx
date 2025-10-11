@@ -51,6 +51,17 @@ const Login = () => {
       localStorage.setItem("user-token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      // Ensure user profile exists (create if missing)
+      const userId = data.user?._id || data.user?.id;
+      if (userId) {
+        try {
+          await axios.post(`/api/profile/create/${userId}`);
+        } catch (err) {
+          // Ignore if it already exists or fails silently
+          // console.warn("Profile create skipped:", err?.response?.data || err?.message);
+        }
+      }
+
       toast.success(data.message, {
         position: "top-right",
         style: { margin: "45px" },

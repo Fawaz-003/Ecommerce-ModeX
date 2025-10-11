@@ -79,19 +79,29 @@ const UserAddresses = () => {
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user"));
-    if (userData && userData.id) {
-      setUserId(userData.id);
-      fetchAddresses(userData.id);
+    const uid = userData?._id || userData?.id;
+    if (uid) {
+      setUserId(uid);
+      ensureProfile(uid).then(() => fetchAddresses(uid));
+    } else {
+      setLoading(false);
     }
   }, []);
 
-  const fetchAddresses = async (userId) => {
+  const ensureProfile = async (uid) => {
+    try {
+      await axios.post(`/api/profile/create/${uid}`);
+    } catch (e) {
+      // ignore if exists
+    }
+  };
+
+  const fetchAddresses = async (uid) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/profile/${userId}`);
+      const response = await axios.get(`/api/profile/${uid}`);
       const data = response.data;
-      
-      if (data && data.profile.addresses) {
+      if (data && data.profile && Array.isArray(data.profile.addresses)) {
         setAddresses(data.profile.addresses);
       } else {
         setAddresses([]);
