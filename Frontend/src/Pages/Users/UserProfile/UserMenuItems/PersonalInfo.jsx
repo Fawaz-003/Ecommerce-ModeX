@@ -31,17 +31,18 @@ const PersonalInfo = () => {
   };
   const handleSave = async () => {
     try {
-      const userId = user.id;
+      const userId = user._id || user.id; // support both shapes just in case
+      if (!userId) return;
       const updatedData = {
         phone: userProfile.phone,
         gender: userProfile.gender,
-        dateOfBirth: userProfile.dateOfBirth,
+        // backend expects `dob`; convert from dd/mm/yyyy to yyyy-mm-dd
+        dob: userProfile.dateOfBirth
+          ? userProfile.dateOfBirth.split("/").reverse().join("-")
+          : "",
       };
 
-      const response = await axios.put(
-        `/api/profile/edit/${userId}`,
-        updatedData
-      );
+      await axios.put(`/api/profile/edit/${userId}`, updatedData);
 
       setIsEditing(false);
     } catch (error) {
@@ -60,17 +61,56 @@ const PersonalInfo = () => {
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user")) || {};
-    setUser(userData);
-    fetchUserProfile(userData.id);
+    const uid = userData._id || userData.id;
+
+    // First, fetch the authenticated user with avatar from /api/users/me
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("user-token");
+        const res = await axios.get("/api/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const me = res.data.user || {};
+        // Ensure avatar set if present on backend, else fallback to local stored value
+        const avatar = me.avatar || userData.avatar || "";
+        setUser({ ...me, avatar });
+        const meId = me._id || me.id || uid;
+        if (meId && (me.role === 0 || userData.role === 0)) {
+          // ensure profile exists only for role 0, then fetch it
+          await ensureProfile(meId);
+          fetchUserProfile(meId);
+        }
+      } catch (err) {
+        // Fall back to local storage if /me fails
+        const avatar = userData.avatar || "";
+        setUser({ ...userData, avatar });
+        if (uid && userData.role === 0) {
+          await ensureProfile(uid);
+          fetchUserProfile(uid);
+        }
+      }
+    };
+
+    fetchCurrentUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const ensureProfile = async (userId) => {
+    try {
+      await axios.post(`/api/profile/create/${userId}`);
+    } catch (e) {
+      // ignore if exists
+    }
+  };
 
   const fetchUserProfile = async (userId) => {
     try {
       const response = await axios.get(`/api/profile/${userId}`);
       const data = response.data.profile;
       let formattedDate = "";
-      if (data.dateOfBirth) {
-        const dateObj = new Date(data.dateOfBirth);
+      if (data.dob || data.dateOfBirth) {
+        const raw = data.dob || data.dateOfBirth;
+        const dateObj = new Date(raw);
         const day = String(dateObj.getDate()).padStart(2, "0");
         const month = String(dateObj.getMonth() + 1).padStart(2, "0");
         const year = dateObj.getFullYear();
@@ -83,7 +123,12 @@ const PersonalInfo = () => {
         dateOfBirth: formattedDate || "",
       });
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      if (error?.response?.status === 404) {
+        // No profile yet; keep defaults
+        setUserProfile({ phone: "", gender: "", dateOfBirth: "" });
+      } else {
+        console.error("Error fetching user profile:", error);
+      }
     }
   };
 
@@ -133,6 +178,7 @@ const PersonalInfo = () => {
                     src={imagePreview || user.avatar}
                     alt="Profile"
                     className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.src = ""; }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-blue-600">
