@@ -9,7 +9,7 @@ const userProfileSchema = new mongoose.Schema(
       unique: true,
     },
     phone: { type: Number },
-    gender: { type: String, enum: ["Male", "Female", "Other"] },
+    gender: { type: String, enum: ["male", "female", "other"] },
     dob: { type: Date },
     addresses: [
       {
