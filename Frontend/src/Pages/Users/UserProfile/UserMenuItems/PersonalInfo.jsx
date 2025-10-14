@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Edit3, Save, X, Camera, User } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useAppContext } from "../../../../Context/AppContext";
 
 const PersonalInfo = () => {
@@ -15,7 +17,13 @@ const PersonalInfo = () => {
     gender: "",
     dateOfBirth: "",
   });
+  const [originalProfile, setOriginalProfile] = useState({
+    phone: "",
+    gender: "",
+    dateOfBirth: "",
+  });
   const { axios } = useAppContext();
+
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -26,27 +34,65 @@ const PersonalInfo = () => {
       reader.readAsDataURL(file);
     }
   };
-  const handleInputChange = (field, value) => {
-    setUser((prev) => ({ ...prev, [field]: value }));
-  };
+
   const handleSave = async () => {
     try {
-      const userId = user._id || user.id; // support both shapes just in case
-      if (!userId) return;
+      // Validation
+      if (userProfile.phone && !/^\d{10}$/.test(userProfile.phone)) {
+        toast.error("Please enter a valid 10-digit phone number");
+        return;
+      }
+
+      if (!userProfile.gender) {
+        toast.error("Please select a gender");
+        return;
+      }
+
+      if (!userProfile.dateOfBirth) {
+        toast.error("Please select a date of birth");
+        return;
+      }
+
+      const userId = user._id || user.id;
+      if (!userId) {
+        toast.error("User ID not found");
+        return;
+      }
+
+      // Convert date from dd/mm/yyyy to yyyy-mm-dd for backend
+      let dobFormatted = "";
+      if (userProfile.dateOfBirth) {
+        if (userProfile.dateOfBirth.includes("/")) {
+          // Already in dd/mm/yyyy format
+          dobFormatted = userProfile.dateOfBirth.split("/").reverse().join("-");
+        } else {
+          // Already in yyyy-mm-dd format from date input
+          dobFormatted = userProfile.dateOfBirth;
+        }
+      }
+
       const updatedData = {
         phone: userProfile.phone,
         gender: userProfile.gender,
-        // backend expects `dob`; convert from dd/mm/yyyy to yyyy-mm-dd
-        dob: userProfile.dateOfBirth
-          ? userProfile.dateOfBirth.split("/").reverse().join("-")
-          : "",
+        dob: dobFormatted,
       };
 
-      await axios.put(`/api/profile/edit/${userId}`, updatedData);
+      const token = localStorage.getItem("user-token");
+      await axios.put(`/api/profile/edit/${userId}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
+      // Update original profile to reflect saved changes
+      setOriginalProfile({ ...userProfile });
       setIsEditing(false);
+      setImagePreview(null);
+      
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to update profile. Please try again."
+      );
     }
   };
 
@@ -55,15 +101,17 @@ const PersonalInfo = () => {
   };
 
   const handleCancel = () => {
+    // Restore original values
+    setUserProfile({ ...originalProfile });
     setIsEditing(false);
     setImagePreview(null);
+    toast.info("Changes discarded");
   };
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user")) || {};
     const uid = userData._id || userData.id;
 
-    // First, fetch the authenticated user with avatar from /api/users/me
     const fetchCurrentUser = async () => {
       try {
         const token = localStorage.getItem("user-token");
@@ -71,17 +119,14 @@ const PersonalInfo = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const me = res.data.user || {};
-        // Ensure avatar set if present on backend, else fallback to local stored value
         const avatar = me.avatar || userData.avatar || "";
         setUser({ ...me, avatar });
         const meId = me._id || me.id || uid;
         if (meId && (me.role === 0 || userData.role === 0)) {
-          // ensure profile exists only for role 0, then fetch it
           await ensureProfile(meId);
           fetchUserProfile(meId);
         }
       } catch (err) {
-        // Fall back to local storage if /me fails
         const avatar = userData.avatar || "";
         setUser({ ...userData, avatar });
         if (uid && userData.role === 0) {
@@ -117,17 +162,22 @@ const PersonalInfo = () => {
         formattedDate = `${day}/${month}/${year}`;
       }
 
-      setUserProfile({
+      const profileData = {
         phone: data.phone || "",
         gender: data.gender || "",
         dateOfBirth: formattedDate || "",
-      });
+      };
+
+      setUserProfile(profileData);
+      setOriginalProfile(profileData);
     } catch (error) {
       if (error?.response?.status === 404) {
-        // No profile yet; keep defaults
-        setUserProfile({ phone: "", gender: "", dateOfBirth: "" });
+        const emptyProfile = { phone: "", gender: "", dateOfBirth: "" };
+        setUserProfile(emptyProfile);
+        setOriginalProfile(emptyProfile);
       } else {
         console.error("Error fetching user profile:", error);
+        toast.error("Failed to load profile data");
       }
     }
   };
@@ -137,204 +187,216 @@ const PersonalInfo = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Personal Information
-          </h1>
-          {!isEditing ? (
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Edit3 className="w-4 h-4" /> Edit
-            </button>
-          ) : (
-            <div className="flex gap-2">
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Personal Information
+            </h1>
+            {!isEditing ? (
               <button
-                onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Save className="w-4 h-4" /> Save
-              </button>
-              <button
-                onClick={handleCancel}
+                onClick={handleEdit}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <X className="w-4 h-4" /> Cancel
+                <Edit3 className="w-4 h-4" /> Edit
               </button>
-            </div>
-          )}
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSave}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Save className="w-4 h-4" /> Save
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2 flex items-center gap-4">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
-                {imagePreview || user.avatar ? (
-                  <img
-                    src={imagePreview || user.avatar}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    onError={(e) => { e.currentTarget.src = ""; }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-blue-600">
-                    <User className="w-8 h-8 text-white" />
-                  </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2 flex items-center gap-4">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
+                  {imagePreview || user.avatar ? (
+                    <img
+                      src={imagePreview || user.avatar}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-blue-600">
+                      <User className="w-8 h-8 text-white" />
+                    </div>
+                  )}
+                </div>
+                {isEditing && (
+                  <label className="absolute -bottom-1 -right-1 bg-blue-600 rounded-full p-1.5 cursor-pointer hover:bg-blue-700 transition-colors">
+                    <Camera className="w-3 h-3 text-white" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
-              {isEditing && (
-                <label className="absolute -bottom-1 -right-1 bg-blue-600 rounded-full p-1.5 cursor-pointer hover:bg-blue-700 transition-colors">
-                  <Camera className="w-3 h-3 text-white" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
+              <div>
+                <p className="font-medium text-gray-900">Profile Photo</p>
+                <p className="text-sm text-gray-500">
+                  {isEditing
+                    ? "Click the camera icon to change your photo"
+                    : "Recommended size: 200x200 pixels"}
+                </p>
+              </div>
             </div>
             <div>
-              <p className="font-medium text-gray-900">Profile Photo</p>
-              <p className="text-sm text-gray-500">
-                {isEditing
-                  ? "Click the camera icon to change your photo"
-                  : "Recommended size: 200x200 pixels"}
-              </p>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name *
-            </label>
-            {isEditing ? (
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name *
+              </label>
               <input
                 type="text"
                 value={user.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
+                disabled
                 placeholder="Enter your full name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
               />
-            ) : (
-              <p className="text-gray-900 py-2">
-                {user.name || "Not provided"}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address *
-            </label>
-            {isEditing ? (
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address *
+              </label>
               <input
                 type="email"
                 value={user.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                disabled
                 placeholder="Enter your email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
               />
-            ) : (
-              <p className="text-gray-900 py-2">
-                {user.email || "Not provided"}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            {isEditing ? (
-              <input
-                type="tel"
-                value={userProfile.phone}
-                onChange={(e) => handleProfileChange("phone", e.target.value)}
-                placeholder="Enter your phone number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="text-gray-500 py-2">
-                {userProfile.phone || "Not provided"}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Gender
-            </label>
-            {isEditing ? (
-              <select
-                value={userProfile.gender}
-                onChange={(e) => handleProfileChange("gender", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            ) : (
-              <p className="text-gray-500 py-2 capitalize">
-                {userProfile.gender || "Not provided"}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date of Birth
-            </label>
-            {isEditing ? (
-              <input
-                type="date"
-                value={
-                  userProfile.dateOfBirth
-                    ? userProfile.dateOfBirth.split("/").reverse().join("-")
-                    : ""
-                }
-                onChange={(e) =>
-                  handleProfileChange("dateOfBirth", e.target.value)
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="text-gray-500 py-2">
-                {userProfile.dateOfBirth || "Not provided"}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-2">Account Stats</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Total Orders:</span>
-                <span className="font-medium"> 0 </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Wishlist Items:</span>
-                <span className="font-medium"> 0 </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Reviews Given:</span>
-                <span className="font-medium"> 0 </span>
-              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number *
+              </label>
+              {isEditing ? (
+                <input
+                  type="tel"
+                  value={userProfile.phone}
+                  onChange={(e) => handleProfileChange("phone", e.target.value)}
+                  placeholder="Enter your phone number"
+                  maxLength="10"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900 py-2 px-3 border border-gray-200 rounded-lg bg-gray-50">
+                  {userProfile.phone || "Not provided"}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gender *
+              </label>
+              {isEditing ? (
+                <select
+                  value={userProfile.gender}
+                  onChange={(e) =>
+                    handleProfileChange("gender", e.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              ) : (
+                <p className="text-gray-900 py-2 px-3 border border-gray-200 rounded-lg bg-gray-50 capitalize">
+                  {userProfile.gender || "Not provided"}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date of Birth *
+              </label>
+              {isEditing ? (
+                <input
+                  type="date"
+                  value={
+                    userProfile.dateOfBirth
+                      ? userProfile.dateOfBirth.split("/").reverse().join("-")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    handleProfileChange("dateOfBirth", e.target.value)
+                  }
+                  max={new Date().toISOString().split("T")[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900 py-2 px-3 border border-gray-200 rounded-lg bg-gray-50">
+                  {userProfile.dateOfBirth || "Not provided"}
+                </p>
+              )}
             </div>
           </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-2">Wallet</h3>
-            <div className="text-2xl font-bold text-green-600">₹0</div>
-            <p className="text-sm text-gray-600">Available Balance</p>
-            <button className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">
-              Add Money
-            </button>
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Account Stats
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Orders:</span>
+                  <span className="font-medium"> 0 </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Wishlist Items:</span>
+                  <span className="font-medium"> 0 </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Reviews Given:</span>
+                  <span className="font-medium"> 0 </span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-2">Wallet</h3>
+              <div className="text-2xl font-bold text-green-600">₹0</div>
+              <p className="text-sm text-gray-600">Available Balance</p>
+              <button className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Add Money
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

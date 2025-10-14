@@ -105,6 +105,11 @@ const UserProfile = () => {
                         src={imagePreview || user.avatar}
                         alt="Profile"
                         className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; // fallback image
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-blue-600">
