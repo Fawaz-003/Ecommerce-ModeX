@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Heart, IndianRupee, Star, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAppContext } from "../Context/AppContext";
 import { toast } from "react-toastify";
 
@@ -11,14 +11,15 @@ const ProductCard = ({ product }) => {
 
   const isWishlisted = wishlist.includes(product._id);
 
-  const handleWishlistClick = async (e) => {
-    e.stopPropagation(); // prevent card navigation
-
+const handleWishlistClick = async (e) => {
+    e.stopPropagation(); 
+    
     if (!user) {
       navigate("/login");
       return;
     }
 
+    // This part only runs if the user is logged in.
     if (isUpdating) return; // Prevent multiple clicks
     setIsUpdating(true);
 
@@ -45,17 +46,27 @@ const ProductCard = ({ product }) => {
     }
   };
 
+
   const averageRating =
     product.reviews?.length > 0
       ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length
       : 0;
 
   const renderStars = (rating) => {
+    const getRatingColorClass = (rating) => {
+      if (rating >= 4) return "text-green-600 bg-green-100";
+      if (rating >= 3) return "text-yellow-600 bg-yellow-100";
+      if (rating >= 2) return "text-orange-600 bg-orange-100";
+      return "text-red-600 bg-red-100";
+    };
+
     return [...Array(5)].map((_, i) => (
       <Star
         key={i}
         size={14}
-        className={`${i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+        className={`${
+          i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+        }`}
       />
     ));
   };
@@ -64,17 +75,32 @@ const ProductCard = ({ product }) => {
     navigate(`/products/${product._id}`);
   };
 
+  const getRatingColorClass = (rating) => {
+    if (rating >= 4) return "bg-green-600";
+    if (rating >= 3) return "bg-yellow-500";
+    if (rating >= 2) return "bg-orange-500";
+    return "bg-red-600";
+  };
+
+  const price = product.variant?.[0]?.price;
+  const originalPrice = product.variant?.[0]?.originalPrice;
+  const discount = originalPrice && price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
   return (
-    <div
+    <Link
+      to={`/products/${product._id}`}
       onClick={handleCardClick}
-      className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm hover:shadow-md overflow-hidden transition-all duration-300 group border border-gray-100 flex flex-col"
+      className="bg-white rounded-lg shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 group border border-transparent hover:border-blue-300 flex flex-col"
     >
-      <div className="relative bg-gray-100 h-35 sm:h-56 lg:h-60 rounded-lg overflow-hidden flex-shrink-0">
+      <div className="relative bg-gray-50 h-40 sm:h-48 md:h-52 rounded-t-lg overflow-hidden flex-shrink-0">
         <img
           src={product.images[0]?.url}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
         />
+        {discount > 0 && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">{discount}% off</div>
+        )}
         <button
           onClick={handleWishlistClick}
           className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 bg-white hover:cursor-pointer rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
@@ -97,27 +123,33 @@ const ProductCard = ({ product }) => {
         </button>
       </div>
 
-      <div className="p-3 sm:p-4 flex flex-col flex-grow">
-        <h3 className="font-medium text-gray-800 text-[12px] lg:text-[14px] sm:text-base line-clamp-2 leading-relaxed min-h-[2rem] sm:min-h-[3rem]">
+      <div className="p-3 flex flex-col flex-grow">
+        <p className="text-xs text-gray-500 mb-1">{product.brand || 'Brand'}</p>
+        <h3 className="font-medium text-gray-800 text-sm line-clamp-2 leading-snug flex-grow">
           {product.name}
         </h3>
 
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="flex items-center text-base sm:text-lg text-[14px] lg:text-[16px] font-bold text-gray-900">
-            <IndianRupee width={15} height={15} />
-            {product.variant[0].price}
+        <div className="flex items-center gap-2 mt-2">
+          {averageRating > 0 && (
+            <div className={`flex items-center gap-1 text-white text-xs font-bold px-2 py-0.5 rounded-sm ${getRatingColorClass(averageRating)}`}>
+              <span>{averageRating.toFixed(1)}</span>
+              <Star size={12} className="fill-current" />
+            </div>
+          )}
+          <span className="text-xs text-gray-500">
+            ({product.reviews?.length || 0} Ratings)
           </span>
         </div>
 
-        {/* Star Rating - Responsive Size */}
-        <div className="flex items-center gap-1">
-          <div className="flex">{renderStars(averageRating)}</div>
-          <span className="text-xs text-gray-500 ml-1">
-            ({product.reviews?.length || 0})
+        <div className="flex items-baseline gap-2 mt-2">
+          <span className="flex items-center text-lg font-bold text-gray-900">
+            <IndianRupee width={14} height={14} className="mr-0.5" />
+            {price}
           </span>
+          {originalPrice && <span className="text-sm text-gray-400 line-through">₹{originalPrice}</span>}
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

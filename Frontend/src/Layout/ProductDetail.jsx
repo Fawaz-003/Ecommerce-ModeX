@@ -1,17 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../Context/AppContext";
-import { IndianRupee, Star } from "lucide-react";
+import {
+  IndianRupee,
+  Star,
+  Heart,
+  Share2,
+  Loader2,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import ProductReviews from "./ProductReviews";
+import Modal from "../Layout/Modal";
+import AddReviewForm from "./AddReviewForm";
+import { MessageSquarePlus } from "lucide-react";
+import ProductDetailSkeleton from "./ProductDetailSkeleton";
 
 const ProductDetail = () => {
   const { id: productId } = useParams();
   const [fetchProduct, setFetchProduct] = useState(null);
-  const { axios } = useAppContext();
+  const { axios, user, wishlist, addToWishlist, removeFromWishlist, navigate } =
+    useAppContext();
   const [thumbnail, setThumbnail] = useState(null);
+
+  const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
+  const isWishlisted = wishlist.includes(productId);
 
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  const userHasReviewed =
+    user && fetchProduct?.reviews.some((review) => review.user?._id === user._id);
 
   useEffect(() => {
     fetchSingleProduct();
@@ -45,8 +65,64 @@ const ProductDetail = () => {
     }
   }, [selectedColor, selectedSize, fetchProduct]);
 
+  const handleWishlistClick = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (isUpdatingWishlist) return;
+    setIsUpdatingWishlist(true);
+
+    const toastOptions = {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+      style: { margin: "45px", zIndex: 9999 },
+    };
+
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(productId);
+        toast.info("Removed from wishlist", toastOptions);
+      } else {
+        await addToWishlist(productId);
+        toast.success("Added to wishlist!", toastOptions);
+      }
+    } catch (error) {
+      toast.error("Something went wrong.", toastOptions);
+      console.error("Wishlist update failed:", error);
+    } finally {
+      setIsUpdatingWishlist(false);
+    }
+  };
+
+  const handleShareClick = async () => {
+    const shareData = {
+      title: fetchProduct.name,
+      text: `Check out this product: ${fetchProduct.name}`,
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (error) {
+      toast.error("Could not share product.");
+      console.error("Share failed:", error);
+    }
+  };
+
+  const handleReviewAdded = () => {
+    setIsReviewModalOpen(false);
+    fetchSingleProduct(); // Refetch product to show the new review
+  };
+
   if (!fetchProduct) {
-    return <p className="p-6">Loading product...</p>;
+    return <ProductDetailSkeleton />;
   }
 
   const colors = [...new Set(fetchProduct.variant?.map((v) => v.color))];
@@ -80,9 +156,9 @@ const ProductDetail = () => {
           <span>{fetchProduct.subcategory}</span> /
           <span className="text-indigo-500"> {fetchProduct?.name}</span>
         </p>
-
-        <div className="flex flex-col md:flex-row gap-16 mt-4">
-          <div className="flex gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mt-4">
+          <div className="md:sticky top-24 self-start">
+            <div className="flex gap-3">
             <div className="flex flex-col gap-3">
               {fetchProduct.images?.map((image, index) => (
                 <div
@@ -103,9 +179,38 @@ const ProductDetail = () => {
               />
             </div>
           </div>
-
-          <div className="text-sm w-full md:w-1/2">
-            <h1 className="text-4xl mb-5 font-medium">{fetchProduct.name}</h1>
+          </div>
+          <div className="text-sm">
+            <div className="flex justify-between items-start mb-5">
+              <h1 className="text-4xl mb-5 font-medium">{fetchProduct.name}</h1>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleWishlistClick}
+                  className="p-3 bg-white hover:bg-gray-100 rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
+                  aria-label="Toggle Wishlist"
+                >
+                  {isUpdatingWishlist ? (
+                    <Loader2 size={20} className="text-gray-400 animate-spin" />
+                  ) : (
+                    <Heart
+                      size={20}
+                      className={`${
+                        isWishlisted
+                          ? "text-red-500 fill-current"
+                          : "text-gray-500 hover:text-red-400"
+                      } transition-colors duration-200`}
+                    />
+                  )}
+                </button>
+                <button
+                  onClick={handleShareClick}
+                  className="p-3 bg-white hover:bg-gray-100 rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
+                  aria-label="Share Product"
+                >
+                  <Share2 size={20} className="text-gray-500" />
+                </button>
+              </div>
+            </div>
 
             <div className="flex items-center gap-1 mb-4">
               <div className="flex">{renderStars(averageRating)}</div>
@@ -218,8 +323,37 @@ const ProductDetail = () => {
                 Buy now
               </button>
             </div>
+
+            {/* Reviews Section */}
+            <div className="mt-12 py-8 border-t border-gray-200">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Customer Reviews
+                </h2>
+                {user && !userHasReviewed && (
+                  <button
+                    onClick={() => setIsReviewModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <MessageSquarePlus size={18} /> Rate Product
+                  </button>
+                )}
+              </div>
+              <ProductReviews
+                reviews={fetchProduct.reviews}
+                averageRating={averageRating}
+              />
+            </div>
           </div>
         </div>
+        {/* Add Review Modal */}
+        <Modal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          title="Write a Review"
+        >
+          <AddReviewForm productId={productId} onReviewSubmit={handleReviewAdded} />
+        </Modal>
       </div>
     </div>
   );

@@ -76,10 +76,7 @@ const Navbar = () => {
           {/* Icons */}
           <div className="flex items-center space-x-4">
             {/* Heart Icon */}
-            <NavLink
-              to="/profile/wishlist"
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
-            >
+            <NavLink to="/profile/wishlist" className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200">
               <Heart size={20} />
             </NavLink>
             {/* Cart Icon */}

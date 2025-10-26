@@ -175,7 +175,10 @@ const ProductList = async (req, res) => {
 const singleProduct = async (req, res) => {
   try {
     const { productId } = req.params;
-    const fetchProduct = await Product.findById(productId);
+    const fetchProduct = await Product.findById(productId).populate(
+      "reviews.userId",
+      "name avatar"
+    );
 
     if (!fetchProduct) {
       return res.status(404).json({
@@ -214,5 +217,60 @@ const getWishlistProducts = async (req, res) => {
   }
 };
 
+const addReview = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.user?._id || req.body.userId; 
+    if (!rating || !comment) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating and comment are required",
+      });
+    }
 
-export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct, getWishlistProducts };
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+    const alreadyReviewed = product.reviews.find(
+      (rev) => rev.userId.toString() === userId.toString()
+    );
+
+    if (alreadyReviewed) {
+      alreadyReviewed.rating = rating;
+      alreadyReviewed.comment = comment;
+      alreadyReviewed.date = new Date();
+    } else {
+      const review = { userId, rating, comment };
+      product.reviews.push(review);
+    }
+
+    const total = product.reviews.reduce((acc, rev) => acc + rev.rating, 0);
+    const avgRating = total / product.reviews.length;
+    product.averageRating = avgRating;
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: alreadyReviewed
+        ? "Review updated successfully"
+        : "Review added successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Error adding review:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while adding review",
+    });
+  }
+};
+
+
+export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct, getWishlistProducts, addReview };
