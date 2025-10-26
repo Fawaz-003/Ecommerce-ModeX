@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 import Home from "./Pages/Home";
 import About from "./Pages/About";
@@ -9,7 +9,15 @@ import Cart from "./Pages/Cart";
 import Login from "./Pages/Users/Login";
 import Register from "./Pages/Users/Register";
 import UserProfile from "./Pages/Users/UserProfile/UserProfileLayout";
-import WishList from "./Pages/WishList";
+import PersonalInfo from "./Pages/Users/UserProfile/UserMenuItems/PersonalInfo";
+import Wishlist from "./Pages/Users/UserProfile/UserMenuItems/UserWishlist";
+import Orders from "./Pages/Users/UserProfile/UserMenuItems/UserOrders";
+import Addresses from "./Pages/Users/UserProfile/UserMenuItems/UserAddresses";
+import Returns from "./Pages/Users/UserProfile/UserMenuItems/UserReturns";
+import Payments from "./Pages/Users/UserProfile/UserMenuItems/UserPayments";
+import Reviews from "./Pages/Users/UserProfile/UserMenuItems/UserReviews";
+import Coupons from "./Pages/Users/UserProfile/UserMenuItems/UserCoupons";
+import Notifications from "./Pages/Users/UserProfile/UserMenuItems/UserNotification";
 
 import Navbar from "./Layout/Navbar";
 import Footer from "./Layout/Footer";
@@ -68,7 +76,7 @@ const App = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/wishlist" element={<WishList />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
         <Route
           path="/profile"
@@ -77,7 +85,18 @@ const App = () => {
               <UserProfile />
             </UserRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="personal-information" replace />} />
+          <Route path="personal-information" element={<PersonalInfo />} />
+          <Route path="wishlist" element={<Wishlist />} />
+          <Route path="my-orders" element={<Orders />} />
+          <Route path="addresses" element={<Addresses />} />
+          <Route path="returns-refunds" element={<Returns />} />
+          <Route path="payment-methods" element={<Payments />} />
+          <Route path="my-reviews" element={<Reviews />} />
+          <Route path="coupons" element={<Coupons />} />
+          <Route path="notifications" element={<Notifications />} />
+        </Route>
 
         {/* Admin Routes */}
         <Route
@@ -103,6 +122,9 @@ const App = () => {
             <Route path="editcategory/:id" element={<EditCategory />} />
           </Route>
         </Route>
+
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       {/* Footer */}

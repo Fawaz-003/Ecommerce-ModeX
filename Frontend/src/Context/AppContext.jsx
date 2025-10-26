@@ -1,10 +1,15 @@
-import { createContext, useMemo, useState, useContext, useEffect } from "react";
+import { createContext, useMemo, useState, useContext, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosLib from "axios";
+import { toast } from "react-toastify";
 
 export const AppContext = createContext({
   user: null,
   setUser: () => {},
+  wishlist: [],
+  fetchWishlist: async () => {},
+  addToWishlist: async () => {},
+  removeFromWishlist: async () => {},
   backendURL: "",
 });
 
@@ -13,6 +18,7 @@ export const AppContextProvider = ({ children }) => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
+  const [wishlist, setWishlist] = useState([]);
 
   const navigate = useNavigate();
 
@@ -25,18 +31,53 @@ export const AppContextProvider = ({ children }) => {
       headers: { "Content-Type": "application/json" },
     });
   }, [backendURL]);
-  
+
+  const fetchWishlist = useCallback(async () => {
+    if (!user?._id) {
+      setWishlist([]);
+      return;
+    }
+    try {
+      const res = await axios.get(`/api/profile/${user._id}`);
+      const wishlistItems = res.data.profile.wishlist || [];
+      setWishlist(wishlistItems.map(item => item.product));
+    } catch (err) {
+      console.error("Failed to fetch wishlist:", err);
+      setWishlist([]);
+    }
+  }, [axios, user]);
+
+  const addToWishlist = async (productId) => {
+    if (!user?._id) return;
+    // The backend controller handles if it's already in the wishlist
+    await axios.post(`/api/wishlist/add/${user._id}`, { productId });
+    setWishlist((prev) => {
+      if (prev.includes(productId)) return prev;
+      return [...prev, productId];
+    });
+  };
+
+  const removeFromWishlist = async (productId) => {
+    if (!user?._id) return;
+    await axios.delete(`/api/wishlist/remove/${user._id}`, { data: { productId } });
+    setWishlist((prev) => prev.filter((id) => id !== productId));
+  };
+
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
+      fetchWishlist();
     } else {
       localStorage.removeItem("user");
+      setWishlist([]);
     }
-  }, [user]);
+  }, [user, fetchWishlist]);
 
   const value = useMemo(
-    () => ({ user, setUser, axios, navigate, backendURL }),
-    [user, axios, navigate, backendURL]
+    () => ({
+      user, setUser, axios, navigate, backendURL, wishlist, fetchWishlist, addToWishlist, removeFromWishlist
+    }),
+    [user, axios, navigate, backendURL, wishlist, fetchWishlist]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

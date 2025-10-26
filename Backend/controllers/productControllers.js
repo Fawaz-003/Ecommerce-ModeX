@@ -197,4 +197,22 @@ const singleProduct = async (req, res) => {
   }
 };
 
-export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct };
+const getWishlistProducts = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "No product IDs provided" });
+    }
+
+    const products = await Product.find({ _id: { $in: ids } });
+
+    res.json({ success: true, products });
+  } catch (error) {
+    console.error("Error fetching wishlist products:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct, getWishlistProducts };

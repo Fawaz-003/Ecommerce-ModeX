@@ -24,7 +24,7 @@ const Collections = () => {
   // Get unique values for filters
   const categories = [...new Set(allProducts.map((p) => p.category))];
   const brands = [...new Set(allProducts.map((p) => p.brand))];
-  const { axios } = useAppContext();
+  const { axios, user } = useAppContext();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -120,11 +120,6 @@ const Collections = () => {
     );
   };
 
-  const handleWishlistToggle = (productId, isAdded) => {
-    console.log(
-      `Product ${productId} ${isAdded ? "added to" : "removed from"} wishlist`
-    );
-  };
 
   const clearAllFilters = () => {
     setPriceRange([0, 1000]);
@@ -348,11 +343,7 @@ const Collections = () => {
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
           {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onWishlistToggle={handleWishlistToggle}
-            />
+            <ProductCard key={product._id} product={product} />
           ))}
           {/* Loading State */}
           {loading && (

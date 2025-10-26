@@ -28,14 +28,6 @@ const LatestCollections = () => {
     fetchProducts();
   }, [axios]);
 
-  const handleWishlistToggle = (productId, isWishlisted) => {
-    console.log(
-      `Product ${productId} ${
-        isWishlisted ? "added to" : "removed from"
-      } wishlist`
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12 lg:py-16">
       <div className="w-full px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
@@ -71,11 +63,7 @@ const LatestCollections = () => {
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {products.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  onWishlistToggle={handleWishlistToggle}
-                />
+                <ProductCard key={product._id} product={product} />
               ))}
               {/* Loading State */}
               {loading && (

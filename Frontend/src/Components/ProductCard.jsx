@@ -1,21 +1,53 @@
-import React, { useState } from "react";
-import { Heart, IndianRupee, Star } from "lucide-react";
+import { useState } from "react";
+import { Heart, IndianRupee, Star, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../Context/AppContext";
+import { toast } from "react-toastify";
 
-const ProductCard = ({ product, onWishlistToggle }) => {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+const ProductCard = ({ product }) => {
+  const { wishlist, addToWishlist, removeFromWishlist, user } = useAppContext();
   const navigate = useNavigate();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleWishlistClick = () => {
-    e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    onWishlistToggle && onWishlistToggle(product.id, !isWishlisted);
+  const isWishlisted = wishlist.includes(product._id);
+
+  const handleWishlistClick = async (e) => {
+    e.stopPropagation(); // prevent card navigation
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (isUpdating) return; // Prevent multiple clicks
+    setIsUpdating(true);
+
+    const toastOptions = {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+      style: { margin: "45px", zIndex: 9999 },
+    };
+
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(product._id);
+        toast.info("Removed from wishlist", toastOptions);
+      } else {
+        await addToWishlist(product._id);
+        toast.success("Added to wishlist!", toastOptions);
+      }
+    } catch (error) {
+      toast.error("Something went wrong.", toastOptions);
+      console.error("Wishlist update failed:", error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const averageRating =
     product.reviews?.length > 0
-      ? product.reviews.reduce((acc, r) => acc + r.rating, 0) /
-        product.reviews.length
+      ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length
       : 0;
 
   const renderStars = (rating) => {
@@ -23,17 +55,13 @@ const ProductCard = ({ product, onWishlistToggle }) => {
       <Star
         key={i}
         size={14}
-        className={`${
-          i < Math.floor(rating)
-            ? "text-yellow-400 fill-current"
-            : "text-gray-300"
-        }`}
+        className={`${i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
       />
     ));
   };
 
   const handleCardClick = () => {
-    navigate(`/products/${product._id}`); 
+    navigate(`/products/${product._id}`);
   };
 
   return (
@@ -51,14 +79,21 @@ const ProductCard = ({ product, onWishlistToggle }) => {
           onClick={handleWishlistClick}
           className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 bg-white hover:cursor-pointer rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
         >
-          <Heart
-            size={16}
-            className={`sm:w-[18px] sm:h-[18px] ${
-              isWishlisted
-                ? "text-red-500 fill-current"
-                : "text-gray-400 hover:text-red-400"
-            } transition-colors duration-200`}
-          />
+          {isUpdating ? (
+            <Loader2
+              size={16}
+              className="sm:w-[18px] sm:h-[18px] text-gray-400 animate-spin"
+            />
+          ) : (
+            <Heart
+              size={16}
+              className={`sm:w-[18px] sm:h-[18px] ${
+                isWishlisted
+                  ? "text-red-500 fill-current"
+                  : "text-gray-400 hover:text-red-400"
+              } transition-colors duration-200`}
+            />
+          )}
         </button>
       </div>
 
