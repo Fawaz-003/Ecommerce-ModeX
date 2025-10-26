@@ -3,6 +3,7 @@ import MobileSort from "../Layout/MobileSort";
 import { useState, useMemo } from "react";
 import { Search, Filter, ChevronRight } from "lucide-react";
 import ProductCard from "../Components/ProductCard";
+import ProductCardSkeleton from "../Components/ProductCardSkeleton.jsx";
 import { useEffect } from "react";
 import { useAppContext } from "../Context/AppContext";
 
@@ -342,22 +343,21 @@ const Collections = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
           {/* Loading State */}
           {loading && (
-            <div className="text-center py-16">
-              <p className="text-gray-600">Loading products...</p>
-            </div>
+            [...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)
           )}
 
           {/* Error State */}
-          {error && (
-            <div className="text-center py-16">
+          {!loading && error && (
+            <div className="text-center py-16 col-span-full">
               <p className="text-red-600">{error}</p>
             </div>
           )}
+
+          {!loading && !error && filteredProducts.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
         </div>
 
         {/* No Results */}

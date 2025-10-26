@@ -2,6 +2,7 @@ import ProductCard from "../../Components/ProductCard";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../Context/AppContext";
+import ProductCardSkeleton from "../../Components/ProductCardSkeleton.jsx";
 
 const LatestCollections = () => {
   const [products, setAllProducts] = useState([]);
@@ -62,22 +63,20 @@ const LatestCollections = () => {
           {/* Products Grid - Comprehensive Responsive Grid */}
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
-              {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
               {/* Loading State */}
               {loading && (
-                <div className="text-center py-16">
-                  <p className="text-gray-600">Loading products...</p>
-                </div>
+                [...Array(10)].map((_, i) => <ProductCardSkeleton key={i} />)
               )}
 
-              {/* Error State */}
-              {error && (
+              {!loading && error && (
                 <div className="text-center py-16">
                   <p className="text-red-600">{error}</p>
                 </div>
               )}
+
+              {!loading && !error && products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
             </div>
           </div>
         </div>

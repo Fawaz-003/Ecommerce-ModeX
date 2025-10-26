@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "../../../../Components/ProductCard.jsx";
 import { useAppContext } from "../../../../Context/AppContext.jsx";
 import { toast } from "react-toastify";
+import ProductCardSkeleton from "../../../../Components/ProductCardSkeleton.jsx";
 
 const UserWishlist = () => {
   const { axios, user, wishlist, removeFromWishlist } = useAppContext();
@@ -40,7 +41,13 @@ const UserWishlist = () => {
     fetchWishlistProducts();
   }, [axios, user, wishlist, wishlistProducts.length]);
 
-  if (loading) return <p className="text-center py-16">Loading wishlist...</p>;
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+        {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
+      </div>
+    );
+  }
   if (error) return <p className="text-center py-16 text-red-600">{error}</p>;
   if (wishlist.length === 0 || wishlistProducts.length === 0) {
     return <p className="text-center py-16">Your wishlist is empty</p>;
@@ -49,7 +56,7 @@ const UserWishlist = () => {
   return (
     <div>
       <h1 className="text-xl font-medium">Favourite Products</h1>
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2">
       {wishlistProducts.map((product) => (
         <ProductCard key={product._id} product={product} />
       ))}
