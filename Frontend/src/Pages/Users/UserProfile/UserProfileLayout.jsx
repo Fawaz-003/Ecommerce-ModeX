@@ -12,6 +12,7 @@ import {
   ChevronRight,
   User,
 } from "lucide-react";
+import { NavLink, Outlet } from "react-router-dom";
 import Logout from "../../../Components/Logout";
 import PersonalInfo from "./UserMenuItems/PersonalInfo";
 import Wishlist from "./UserMenuItems/UserWishlist";
@@ -24,7 +25,6 @@ import Coupons from "./UserMenuItems/UserCoupons";
 import Notifications from "./UserMenuItems/UserNotification";
 
 const UserProfile = () => {
-  const [activeMenu, setActiveMenu] = useState("Personal Information");
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({
@@ -53,42 +53,18 @@ const UserProfile = () => {
     }
   };
 
+  // Sidebar items: label + route slug + icon
   const menuItems = [
-    { icon: User2, label: "Personal Information" },
-    { icon: Heart, label: "Wishlist" },
-    { icon: ShoppingBag, label: "My Orders" },
-    { icon: Truck, label: "Addresses" },
-    { icon: Package, label: "Returns & Refunds" },
-    { icon: CreditCard, label: "Payment Methods" },
-    { icon: Star, label: "My Reviews" },
-    { icon: Gift, label: "Gift Cards & Coupons" },
-    { icon: Bell, label: "Notifications" },
+    { icon: User2, label: "Personal Information", slug: "personal-information" },
+    { icon: Heart, label: "Wishlist", slug: "wishlist" },
+    { icon: ShoppingBag, label: "My Orders", slug: "my-orders" },
+    { icon: Truck, label: "Addresses", slug: "addresses" },
+    { icon: Package, label: "Returns & Refunds", slug: "returns-refunds" },
+    { icon: CreditCard, label: "Payment Methods", slug: "payment-methods" },
+    { icon: Star, label: "My Reviews", slug: "my-reviews" },
+    { icon: Gift, label: "Gift Cards & Coupons", slug: "coupons" },
+    { icon: Bell, label: "Notifications", slug: "notifications" },
   ];
-
-  const renderActiveComponent = () => {
-    switch (activeMenu) {
-      case "Personal Information":
-        return <PersonalInfo />;
-      case "Wishlist":
-        return <Wishlist />;
-      case "My Orders":
-        return <Orders />;
-      case "Addresses":
-        return <Addresses />;
-      case "Returns & Refunds":
-        return <Returns />;
-      case "Payment Methods":
-        return <Payments />;
-      case "My Reviews":
-        return <Reviews />;
-      case "Gift Cards & Coupons":
-        return <Coupons />;
-      case "Notifications":
-        return <Notifications />;
-      default:
-        return <PersonalInfo />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -108,7 +84,7 @@ const UserProfile = () => {
                         referrerPolicy="no-referrer"
                         onError={(e) => {
                           e.currentTarget.src =
-                            "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; // fallback image
+                            "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
                         }}
                       />
                     ) : (
@@ -126,52 +102,45 @@ const UserProfile = () => {
                 </div>
               </div>
             </div>
+
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="divide-y divide-gray-100">
                 {menuItems.map((item, index) => (
-                  <div
+                  <NavLink
                     key={index}
-                    onClick={() => setActiveMenu(item.label)}
-                    className={`p-3 cursor-pointer flex items-center justify-between group transition-all duration-100 ${
-                      activeMenu === item.label
-                        ? "bg-blue-50 border-l-4 border-blue-100"
-                        : "hover:bg-gray-50"
-                    }`}
+                    to={`/profile/${item.slug}`}
+                    className={({ isActive }) =>
+                      `p-3 flex items-center justify-between group transition-all duration-100 ${
+                        isActive ? "bg-blue-50 border-l-4 border-blue-100" : "hover:bg-gray-50"
+                      }`
+                    }
                   >
                     <div className="flex items-center">
                       <item.icon
                         className={`w-5 h-5 mr-3 ${
-                          activeMenu === item.label
-                            ? "text-blue-600"
-                            : "text-gray-600"
+                          // highlight icon color via isActive from NavLink className above
+                          ""
                         }`}
                       />
-                      <span
-                        className={`text-sm font-medium ${
-                          activeMenu === item.label
-                            ? "text-blue-600"
-                            : "text-gray-700"
-                        }`}
-                      >
+                      <span className="text-sm font-medium text-gray-700">
                         {item.label}
                       </span>
                     </div>
-                    <ChevronRight
-                      className={`w-4 h-4 ${
-                        activeMenu === item.label
-                          ? "text-blue-500"
-                          : "text-gray-400"
-                      }`}
-                    />
-                  </div>
+                    <ChevronRight className={`w-4 h-4 text-gray-400`} />
+                  </NavLink>
                 ))}
               </div>
             </div>
+
             <div className="my-10 px-10">
               <Logout />
             </div>
           </div>
-          <div className="lg:col-span-3">{renderActiveComponent()}</div>
+
+          {/* Main content area (nested routes will render here) */}
+          <div className="lg:col-span-3 bg-white rounded-lg p-6 shadow-sm">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>
