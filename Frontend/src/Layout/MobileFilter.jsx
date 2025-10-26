@@ -2,7 +2,8 @@ import React from "react";
 import { X } from "lucide-react";
 
 const MobileFilter = ({
-  priceRange, setPriceRange,
+  priceRanges,
+  selectedPriceRanges, togglePriceRange,
   categories, selectedCategories, toggleCategory,
   brands, selectedBrands, toggleBrand,
   showInStockOnly, setShowInStockOnly,
@@ -33,46 +34,26 @@ const MobileFilter = ({
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Price */}
-          <div>
+          <div className="mb-6">
             <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
-            <div className="flex items-center gap-2 mb-3">
-              <input
-                type="number"
-                value={priceRange[0]}
-                onChange={(e) =>
-                  setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])
-                }
-                className="w-20 px-2 py-1 border rounded-lg text-sm"
-                placeholder="Min"
-              />
-              <span>-</span>
-              <input
-                type="number"
-                value={priceRange[1]}
-                onChange={(e) =>
-                  setPriceRange([
-                    priceRange[0],
-                    parseInt(e.target.value) || 1000,
-                  ])
-                }
-                className="w-20 px-2 py-1 border rounded-lg text-sm"
-                placeholder="Max"
-              />
+            <div className="space-y-2">
+              {priceRanges.map((range) => (
+                <label
+                  key={range.label}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedPriceRanges.some(
+                      (r) => r.label === range.label
+                    )}
+                    onChange={() => togglePriceRange(range)}
+                    className="accent-blue-600"
+                  />
+                  <span className="text-sm text-gray-700">{range.label}</span>
+                </label>
+              ))}
             </div>
-            {/* Slider (better dual-handle if you add lib like rc-slider) */}
-            <input
-              type="range"
-              min="0"
-              max="1000"
-              value={priceRange[1]}
-              onChange={(e) =>
-                setPriceRange([priceRange[0], parseInt(e.target.value)])
-              }
-              className="w-full accent-blue-600"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Showing products between ₹{priceRange[0]} – ₹{priceRange[1]}
-            </p>
           </div>
 
           <hr />

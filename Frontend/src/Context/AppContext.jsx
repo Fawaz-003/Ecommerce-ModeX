@@ -32,6 +32,23 @@ export const AppContextProvider = ({ children }) => {
     });
   }, [backendURL]);
 
+  useEffect(() => {
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("user-token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+    };
+  }, [axios]);
+
   const fetchWishlist = useCallback(async () => {
     if (!user?._id) {
       setWishlist([]);
@@ -47,21 +64,20 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [axios, user]);
 
-  const addToWishlist = async (productId) => {
+  const addToWishlist = useCallback(async (productId) => {
     if (!user?._id) return;
-    // The backend controller handles if it's already in the wishlist
     await axios.post(`/api/wishlist/add/${user._id}`, { productId });
     setWishlist((prev) => {
       if (prev.includes(productId)) return prev;
       return [...prev, productId];
     });
-  };
+  }, [axios, user]);
 
-  const removeFromWishlist = async (productId) => {
+  const removeFromWishlist = useCallback(async (productId) => {
     if (!user?._id) return;
     await axios.delete(`/api/wishlist/remove/${user._id}`, { data: { productId } });
     setWishlist((prev) => prev.filter((id) => id !== productId));
-  };
+  }, [axios, user]);
 
   useEffect(() => {
     if (user) {
@@ -77,7 +93,7 @@ export const AppContextProvider = ({ children }) => {
     () => ({
       user, setUser, axios, navigate, backendURL, wishlist, fetchWishlist, addToWishlist, removeFromWishlist
     }),
-    [user, axios, navigate, backendURL, wishlist, fetchWishlist]
+    [user, axios, navigate, backendURL, wishlist, fetchWishlist, addToWishlist, removeFromWishlist]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -1,39 +1,47 @@
 import MobileFilter from "../Layout/MobileFilter";
 import MobileSort from "../Layout/MobileSort";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, ChevronRight } from "lucide-react";
 import ProductCard from "../Components/ProductCard";
 import ProductCardSkeleton from "../Components/ProductCardSkeleton.jsx";
-import { useEffect } from "react";
+import { useProductFilters } from "../Hooks/useProductFilters.js";
 import { useAppContext } from "../Context/AppContext";
 
 const Collections = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Filter states
-  const [priceRange, setPriceRange] = useState([0, 1000]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [showInStockOnly, setShowInStockOnly] = useState(false);
-  const [minRating, setMinRating] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("name");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showSort, setShowSort] = useState(false);
-
-  // Get unique values for filters
-  const categories = [...new Set(allProducts.map((p) => p.category))];
-  const brands = [...new Set(allProducts.map((p) => p.brand))];
+  const [availableCategories, setAvailableCategories] = useState([]);
   const { axios, user } = useAppContext();
 
+  const { filteredProducts, filters, filterSetters, clearAllFilters } = useProductFilters(allProducts);
+  const { priceRanges, selectedPriceRanges, categories, selectedCategories, brands, selectedBrands, showInStockOnly, minRating, searchQuery, sortBy } = filters;
+  const { togglePriceRange, toggleCategory, toggleBrand, setShowInStockOnly, setMinRating, setSearchQuery, setSortBy } = filterSetters;
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProductsAndCategories = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("/api/products/list"); // adjust endpoint
-        const list = res.data.products; // depends on your API response
-        setAllProducts(list);
+        const [productRes, categoryRes] = await Promise.all([
+          axios.get("/api/products/list"),
+          axios.get("/api/category/list"),
+        ]);
+
+        const productList = productRes.data.products || [];
+        const categoryList = categoryRes.data.categories || [];
+
+        const productsWithCategoryName = productList.map((product) => {
+          const category = categoryList.find((c) => c._id === product.category);
+          return {
+            ...product,
+            categoryName: category ? category.name : "Uncategorized",
+          };
+        });
+
+        setAllProducts(productsWithCategoryName);
+        setAvailableCategories(categoryList);
       } catch (err) {
         console.error(err);
         setError("Failed to load products");
@@ -42,94 +50,8 @@ const Collections = () => {
       }
     };
 
-    fetchProducts();
+    fetchProductsAndCategories();
   }, [axios]);
-
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = allProducts.filter((product) => {
-      // Price filter
-      if (product.price < priceRange[0] || product.price > priceRange[1])
-        return false;
-
-      // Category filter
-      if (
-        selectedCategories.length > 0 &&
-        !selectedCategories.includes(product.category)
-      )
-        return false;
-
-      // Brand filter
-      if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand))
-        return false;
-
-      // Stock filter
-      if (showInStockOnly && !product.inStock) return false;
-
-      // Rating filter
-      if (product.rating < minRating) return false;
-
-      // Search filter
-      if (
-        searchQuery &&
-        !product.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-        return false;
-
-      return true;
-    });
-
-    // Sort products
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "price-low":
-          return a.price - b.price;
-        case "price-high":
-          return b.price - a.price;
-        case "rating":
-          return b.rating - a.rating;
-        case "name":
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [
-    allProducts,
-    priceRange,
-    selectedCategories,
-    selectedBrands,
-    showInStockOnly,
-    minRating,
-    searchQuery,
-    sortBy,
-  ]);
-
-  const toggleCategory = (category) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
-
-  const toggleBrand = (brand) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-    );
-  };
-
-
-  const clearAllFilters = () => {
-    setPriceRange([0, 1000]);
-    setSelectedCategories([]);
-    setSelectedBrands([]);
-    setShowInStockOnly(false);
-    setMinRating(0);
-    setSearchQuery("");
-  };
 
   const openMobileFilter = () => {
     setIsMobileFilterOpen(true);
@@ -143,16 +65,16 @@ const Collections = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-80 bg-white shadow-lg p-6 overflow-y-auto">
+      {/* --- Desktop Sidebar --- */}
+      <aside className="hidden lg:block w-80 bg-white p-6 overflow-y-auto border-r border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Filter className="mr-2" size={20} /> Filters
           </h2>
           <button
             onClick={clearAllFilters}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
           >
             Clear All
           </button>
@@ -160,7 +82,7 @@ const Collections = () => {
 
         {/* Search */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Search Products
           </label>
           <div className="relative">
@@ -180,45 +102,27 @@ const Collections = () => {
 
         {/* Price Range */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Price Range
           </label>
-          <div className="flex items-center space-x-2 mb-2">
-            <input
-              type="number"
-              value={priceRange[0]}
-              onChange={(e) =>
-                setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])
-              }
-              placeholder="Min"
-              className="w-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="text-gray-400">-</span>
-            <input
-              type="number"
-              value={priceRange[1]}
-              onChange={(e) =>
-                setPriceRange([priceRange[0], parseInt(e.target.value) || 1000])
-              }
-              placeholder="Max"
-              className="w-24 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="space-y-2">
+            {priceRanges.map((range) => (
+              <label key={range.label} className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedPriceRanges.some(r => r.label === range.label)}
+                  onChange={() => togglePriceRange(range)}
+                  className="mr-3 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600 hover:text-gray-800">{range.label}</span>
+              </label>
+            ))}
           </div>
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            value={priceRange[1]}
-            onChange={(e) =>
-              setPriceRange([priceRange[0], parseInt(e.target.value)])
-            }
-            className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"
-          />
         </div>
 
         {/* Categories */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Categories
           </label>
           <div className="space-y-2">
@@ -244,7 +148,7 @@ const Collections = () => {
 
         {/* Brands */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Brands
           </label>
           <div className="space-y-2">
@@ -270,7 +174,7 @@ const Collections = () => {
 
         {/* Rating & In Stock */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Minimum Rating
           </label>
           <select
@@ -300,7 +204,7 @@ const Collections = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-3 lg:px-8">
+      <main className="flex-1 p-4 lg:p-8">
         {/* Mobile Filter & Sort Row */}
         <div className="lg:hidden h-10 w-30 absolute right-1 mb-4 px-4">
           {/* Sort Button on Left */}
@@ -318,7 +222,7 @@ const Collections = () => {
         {showSort && <MobileSort sortBy={sortBy} setSortBy={setSortBy} />}
 
         {/* Sort Section */}
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           {/* Desktop Sort */}
           <div className="hidden sm:flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -335,13 +239,16 @@ const Collections = () => {
               </select>
             </div>
           </div>
+          <p className="text-sm text-gray-500">
+            Showing {filteredProducts.length} results
+          </p>
 
           {/* ✅ Mobile Sort Component */}
           <div className="lg:hidden flex justify-between items-center mb-4 px-4"></div>
           <MobileSort sortBy={sortBy} setSortBy={setSortBy} />
         </div>
 
-        {/* Product Grid */}
+        {/* --- Product Grid --- */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
           {/* Loading State */}
           {loading && (
@@ -385,8 +292,9 @@ const Collections = () => {
         {/* Mobile Filter Drawer */}
         {isMobileFilterOpen && (
           <MobileFilter
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
+            priceRanges={priceRanges}
+            selectedPriceRanges={selectedPriceRanges}
+            togglePriceRange={togglePriceRange}
             categories={categories}
             selectedCategories={selectedCategories}
             toggleCategory={toggleCategory}

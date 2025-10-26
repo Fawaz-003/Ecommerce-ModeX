@@ -1,20 +1,21 @@
 const ProductCardSkeleton = () => {
   return (
-    <div className="bg-white p-1 lg:p-1.5 rounded-lg shadow-sm border border-gray-100 flex flex-col animate-pulse">
-      {/* Image Placeholder */}
-      <div className="bg-gray-200 h-35 sm:h-56 lg:h-60 rounded-lg"></div>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col animate-pulse">
+ 
+      <div className="bg-gray-200 h-40 sm:h-48 md:h-52 rounded-t-lg"></div>
 
-      {/* Content Placeholder */}
-      <div className="p-3 sm:p-4 flex flex-col flex-grow">
-        {/* Title Placeholder */}
+
+      <div className="p-3 flex flex-col flex-grow">
+        <div className="h-3 bg-gray-200 rounded w-1/4 mb-2"></div>
         <div className="h-4 bg-gray-200 rounded w-4/5 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-3/5 mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-3/5 mb-3"></div>
 
-        {/* Price Placeholder */}
-        <div className="h-5 bg-gray-200 rounded w-1/3 mb-4"></div>
+        <div className="flex items-center gap-2">
+          <div className="h-5 bg-gray-200 rounded w-12"></div>
+          <div className="h-3 bg-gray-200 rounded w-20"></div>
+        </div>
 
-        {/* Rating Placeholder */}
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-6 bg-gray-200 rounded w-1/3 mt-2"></div>
       </div>
     </div>
   );
