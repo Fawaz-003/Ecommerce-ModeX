@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Edit3, Save, X, Camera, User } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { useAppContext } from "../../../../Context/AppContext";
 
 const PersonalInfo = () => {
@@ -12,15 +11,19 @@ const PersonalInfo = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
-  const [userProfile, setUserProfile] = useState({
+  const [profileData, setProfileData] = useState({
     phone: "",
     gender: "",
     dateOfBirth: "",
+    wishlist: [],
+    reviews: [],
   });
-  const [originalProfile, setOriginalProfile] = useState({
+  const [originalProfileData, setOriginalProfileData] = useState({
     phone: "",
     gender: "",
     dateOfBirth: "",
+    wishlist: [],
+    reviews: [],
   });
   const { axios } = useAppContext();
 
@@ -38,17 +41,17 @@ const PersonalInfo = () => {
   const handleSave = async () => {
     try {
       // Validation
-      if (userProfile.phone && !/^\d{10}$/.test(userProfile.phone)) {
+      if (profileData.phone && !/^\d{10}$/.test(profileData.phone)) {
         toast.error("Please enter a valid 10-digit phone number");
         return;
       }
 
-      if (!userProfile.gender) {
+      if (!profileData.gender) {
         toast.error("Please select a gender");
         return;
       }
 
-      if (!userProfile.dateOfBirth) {
+      if (!profileData.dateOfBirth) {
         toast.error("Please select a date of birth");
         return;
       }
@@ -61,19 +64,19 @@ const PersonalInfo = () => {
 
       // Convert date from dd/mm/yyyy to yyyy-mm-dd for backend
       let dobFormatted = "";
-      if (userProfile.dateOfBirth) {
-        if (userProfile.dateOfBirth.includes("/")) {
+      if (profileData.dateOfBirth) {
+        if (profileData.dateOfBirth.includes("/")) {
           // Already in dd/mm/yyyy format
-          dobFormatted = userProfile.dateOfBirth.split("/").reverse().join("-");
+          dobFormatted = profileData.dateOfBirth.split("/").reverse().join("-");
         } else {
           // Already in yyyy-mm-dd format from date input
-          dobFormatted = userProfile.dateOfBirth;
+          dobFormatted = profileData.dateOfBirth;
         }
       }
 
       const updatedData = {
-        phone: userProfile.phone,
-        gender: userProfile.gender,
+        phone: profileData.phone,
+        gender: profileData.gender,
         dob: dobFormatted,
       };
 
@@ -83,7 +86,7 @@ const PersonalInfo = () => {
       });
 
       // Update original profile to reflect saved changes
-      setOriginalProfile({ ...userProfile });
+      setOriginalProfileData({ ...profileData });
       setIsEditing(false);
       setImagePreview(null);
       
@@ -97,12 +100,12 @@ const PersonalInfo = () => {
   };
 
   const handleProfileChange = (field, value) => {
-    setUserProfile((prev) => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCancel = () => {
     // Restore original values
-    setUserProfile({ ...originalProfile });
+    setProfileData({ ...originalProfileData });
     setIsEditing(false);
     setImagePreview(null);
     toast.info("Changes discarded");
@@ -166,15 +169,17 @@ const PersonalInfo = () => {
         phone: data.phone || "",
         gender: data.gender || "",
         dateOfBirth: formattedDate || "",
+        wishlist: data.wishlist || [],
+        reviews: data.reviews || [],
       };
 
-      setUserProfile(profileData);
-      setOriginalProfile(profileData);
+      setProfileData(profileData);
+      setOriginalProfileData(profileData);
     } catch (error) {
       if (error?.response?.status === 404) {
-        const emptyProfile = { phone: "", gender: "", dateOfBirth: "" };
-        setUserProfile(emptyProfile);
-        setOriginalProfile(emptyProfile);
+        const emptyProfile = { phone: "", gender: "", dateOfBirth: "", wishlist: [], reviews: [] };
+        setProfileData(emptyProfile);
+        setOriginalProfileData(emptyProfile);
       } else {
         console.error("Error fetching user profile:", error);
         toast.error("Failed to load profile data");
@@ -188,20 +193,8 @@ const PersonalInfo = () => {
 
   return (
     <>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6">
+      <div>
+        <div className="p-2">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">
               Personal Information
@@ -305,7 +298,7 @@ const PersonalInfo = () => {
               {isEditing ? (
                 <input
                   type="tel"
-                  value={userProfile.phone}
+                  value={profileData.phone}
                   onChange={(e) => handleProfileChange("phone", e.target.value)}
                   placeholder="Enter your phone number"
                   maxLength="10"
@@ -313,7 +306,7 @@ const PersonalInfo = () => {
                 />
               ) : (
                 <p className="text-gray-900 py-2 px-3 border border-gray-200 rounded-lg bg-gray-50">
-                  {userProfile.phone || "Not provided"}
+                  {profileData.phone || "Not provided"}
                 </p>
               )}
             </div>
@@ -323,7 +316,7 @@ const PersonalInfo = () => {
               </label>
               {isEditing ? (
                 <select
-                  value={userProfile.gender}
+                  value={profileData.gender}
                   onChange={(e) =>
                     handleProfileChange("gender", e.target.value)
                   }
@@ -336,7 +329,7 @@ const PersonalInfo = () => {
                 </select>
               ) : (
                 <p className="text-gray-900 py-2 px-3 border border-gray-200 rounded-lg bg-gray-50 capitalize">
-                  {userProfile.gender || "Not provided"}
+                  {profileData.gender || "Not provided"}
                 </p>
               )}
             </div>
@@ -348,8 +341,8 @@ const PersonalInfo = () => {
                 <input
                   type="date"
                   value={
-                    userProfile.dateOfBirth
-                      ? userProfile.dateOfBirth.split("/").reverse().join("-")
+                    profileData.dateOfBirth
+                      ? profileData.dateOfBirth.split("/").reverse().join("-")
                       : ""
                   }
                   onChange={(e) =>
@@ -360,7 +353,7 @@ const PersonalInfo = () => {
                 />
               ) : (
                 <p className="text-gray-900 py-2 px-3 border border-gray-200 rounded-lg bg-gray-50">
-                  {userProfile.dateOfBirth || "Not provided"}
+                  {profileData.dateOfBirth || "Not provided"}
                 </p>
               )}
             </div>
@@ -377,11 +370,11 @@ const PersonalInfo = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Wishlist Items:</span>
-                  <span className="font-medium"> 0 </span>
+                  <span className="font-medium"> {profileData.wishlist.length} </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Reviews Given:</span>
-                  <span className="font-medium"> 0 </span>
+                  <span className="font-medium"> {profileData.reviews.length} </span>
                 </div>
               </div>
             </div>

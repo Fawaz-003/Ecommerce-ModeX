@@ -38,6 +38,7 @@ import AddCategory from "./Pages/Admin/Actions/AddCategory";
 import EditCategory from "./Pages/Admin/Actions/EditCategory";
 
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import UserRoute from "./Routes/UersRoute";
 import { useAppContext } from "./Context/AppContext";
 import ProductDetail from "./Layout/ProductDetail";
@@ -66,7 +67,7 @@ const App = () => {
   return (
     <div className="relative min-h-screen pb-16">
       {!hideNavAndFooter && <Navbar />}
-      <ToastContainer />
+      <ToastContainer limit={3} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />

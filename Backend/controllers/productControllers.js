@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import Product from "../models/productModels.js";
 import Category from "../models/categoryModels.js";
+import UserProfile from "../models/userProfileModels.js";
 
 const addProduct = async (req, res) => {
   try {
@@ -223,6 +224,7 @@ const addReview = async (req, res) => {
     const { rating, comment } = req.body;
     const userId = req.user?._id || req.body.userId; 
     if (!rating || !comment) {
+      console.log("Validation failed: Rating and comment are required.");
       return res.status(400).json({
         success: false,
         message: "Rating and comment are required",
@@ -232,6 +234,7 @@ const addReview = async (req, res) => {
     const product = await Product.findById(productId);
 
     if (!product) {
+      console.log(`Product not found for ID: ${productId}`);
       return res.status(404).json({
         success: false,
         message: "Product not found",
@@ -241,20 +244,53 @@ const addReview = async (req, res) => {
       (rev) => rev.userId.toString() === userId.toString()
     );
 
+    const userProfile = await UserProfile.findOne({ user: userId });
+    if (!userProfile) {
+      // This case is unlikely if profiles are created on registration, but it's good practice to handle it.
+      console.log(`User profile not found for user ID: ${userId}`);
+      return res.status(404).json({
+        success: false,
+        message: "User profile not found.",
+      });
+    }
+
+    const reviewForUserProfile = {
+      product: productId,
+      productName: product.name,
+      productImage: product.images[0]?.url,
+      rating,
+      comment,
+      createdAt: new Date(),
+    };
+
+    const alreadyReviewedInProfile = userProfile.reviews.find(
+      (rev) => rev.product?.toString() === productId.toString()
+    );
+
     if (alreadyReviewed) {
       alreadyReviewed.rating = rating;
       alreadyReviewed.comment = comment;
       alreadyReviewed.date = new Date();
+
+      if (alreadyReviewedInProfile) {
+        alreadyReviewedInProfile.rating = rating;
+        alreadyReviewedInProfile.comment = comment;
+        alreadyReviewedInProfile.createdAt = new Date();
+      } else {
+        // This would be a data inconsistency, but we can fix it by adding it.
+        userProfile.reviews.push(reviewForUserProfile);
+      }
     } else {
       const review = { userId, rating, comment };
       product.reviews.push(review);
+      userProfile.reviews.push(reviewForUserProfile);
     }
 
     const total = product.reviews.reduce((acc, rev) => acc + rev.rating, 0);
     const avgRating = total / product.reviews.length;
     product.averageRating = avgRating;
 
-    await product.save();
+    await Promise.all([product.save(), userProfile.save()]);
 
     res.status(200).json({
       success: true,

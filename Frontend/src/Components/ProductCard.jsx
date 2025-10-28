@@ -12,7 +12,8 @@ const ProductCard = ({ product }) => {
   const isWishlisted = wishlist.includes(product._id);
 
 const handleWishlistClick = async (e) => {
-    e.stopPropagation(); 
+    e.preventDefault();
+    e.stopPropagation();
     
     if (!user) {
       navigate("/login");
@@ -26,8 +27,8 @@ const handleWishlistClick = async (e) => {
     const toastOptions = {
       position: "top-right",
       autoClose: 2000,
-      hideProgressBar: true,
-      style: { margin: "45px", zIndex: 9999 },
+      hideProgressBar: true, // Keep hideProgressBar for a cleaner look
+      // Removed custom style to allow react-toastify to handle positioning
     };
 
     try {
@@ -124,14 +125,14 @@ const handleWishlistClick = async (e) => {
       </div>
 
       <div className="p-3 flex flex-col flex-grow">
-        <p className="text-xs text-gray-500 mb-1">{product.brand || 'Brand'}</p>
-        <h3 className="font-medium text-gray-800 text-sm line-clamp-2 leading-snug flex-grow">
+        <p className="text-[11px] sm:text-xs text-gray-500 mb-1">{product.brand || 'Brand'}</p>
+        <h3 className="font-medium text-gray-800 text-sm sm:text-base line-clamp-2 leading-snug flex-grow">
           {product.name}
         </h3>
 
         <div className="flex items-center gap-2 mt-2">
           {averageRating > 0 && (
-            <div className={`flex items-center gap-1 text-white text-xs font-bold px-2 py-0.5 rounded-sm ${getRatingColorClass(averageRating)}`}>
+            <div className={`flex items-center gap-1 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-sm ${getRatingColorClass(averageRating)}`}>
               <span>{averageRating.toFixed(1)}</span>
               <Star size={12} className="fill-current" />
             </div>
@@ -142,11 +143,11 @@ const handleWishlistClick = async (e) => {
         </div>
 
         <div className="flex items-baseline gap-2 mt-2">
-          <span className="flex items-center text-lg font-bold text-gray-900">
+          <span className="flex items-center text-base sm:text-lg font-bold text-gray-900">
             <IndianRupee width={14} height={14} className="mr-0.5" />
             {price}
           </span>
-          {originalPrice && <span className="text-sm text-gray-400 line-through">₹{originalPrice}</span>}
+          {originalPrice && <span className="text-xs sm:text-sm text-gray-400 line-through">₹{originalPrice}</span>}
         </div>
       </div>
     </Link>

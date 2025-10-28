@@ -150,13 +150,13 @@ const ProductDetail = () => {
 
   return (
     <div className="flex justify-center">
-      <div className="max-w-7xl w-full px-6 py-2 lg:px-20 lg:py-8 bg-gray-50">
+      <div className="max-w-7xl w-full px-4 py-4 sm:px-6 lg:px-8 bg-gray-50">
         <p>
           <span>Home</span> / <span> Products</span> /{" "}
           <span>{fetchProduct.subcategory}</span> /
           <span className="text-indigo-500"> {fetchProduct?.name}</span>
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 mt-4">
           <div className="md:sticky top-24 self-start">
             <div className="flex gap-3">
             <div className="flex flex-col gap-3">
@@ -182,7 +182,7 @@ const ProductDetail = () => {
           </div>
           <div className="text-sm">
             <div className="flex justify-between items-start mb-5">
-              <h1 className="text-4xl mb-5 font-medium">{fetchProduct.name}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl mb-5 font-medium">{fetchProduct.name}</h1>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleWishlistClick}
