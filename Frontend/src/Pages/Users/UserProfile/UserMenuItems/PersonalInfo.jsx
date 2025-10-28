@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Edit3, Save, X, Camera, User } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../../../Context/AppContext";
+import PersonalInfoSkeleton from "../../../../Layout/Skeleton/PersonalInfoSkeleton";
 
 const PersonalInfo = () => {
   const [user, setUser] = useState({
@@ -10,6 +11,7 @@ const PersonalInfo = () => {
     avatar: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
   const [profileData, setProfileData] = useState({
     phone: "",
@@ -116,6 +118,7 @@ const PersonalInfo = () => {
     const uid = userData._id || userData.id;
 
     const fetchCurrentUser = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("user-token");
         const res = await axios.get("/api/users/me", {
@@ -126,16 +129,17 @@ const PersonalInfo = () => {
         setUser({ ...me, avatar });
         const meId = me._id || me.id || uid;
         if (meId && (me.role === 0 || userData.role === 0)) {
-          await ensureProfile(meId);
-          fetchUserProfile(meId);
+          await ensureProfile(meId).then(() => fetchUserProfile(meId));
         }
       } catch (err) {
         const avatar = userData.avatar || "";
         setUser({ ...userData, avatar });
         if (uid && userData.role === 0) {
-          await ensureProfile(uid);
-          fetchUserProfile(uid);
+          await ensureProfile(uid).then(() => fetchUserProfile(uid));
         }
+      } finally {
+        // A small delay to prevent flickering if data loads too fast
+        setTimeout(() => setLoading(false), 300);
       }
     };
 
@@ -190,6 +194,10 @@ const PersonalInfo = () => {
   const handleEdit = () => {
     setIsEditing(true);
   };
+
+  if (loading) {
+    return <PersonalInfoSkeleton />;
+  }
 
   return (
     <>

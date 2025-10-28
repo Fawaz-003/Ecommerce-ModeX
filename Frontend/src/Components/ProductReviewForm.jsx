@@ -28,10 +28,8 @@ const ProductReviewForm = ({ productId, onReviewSubmit }) => {
         comment,
         userId: user._id,
       });
-      toast.success("Thank you for your review!", {
-        // This ensures the form closes only after the toast is dismissed.
-        onClose: () => onReviewSubmit(),
-      });
+      toast.success("Thank you for your review!");
+      onReviewSubmit(); // This will refetch product data and close the form
     } catch (error) {
       console.error("Failed to submit review:", error);
       toast.error(
