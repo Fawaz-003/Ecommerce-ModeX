@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "../../../../Components/ProductCard.jsx";
 import { useAppContext } from "../../../../Context/AppContext.jsx";
 import { toast } from "react-toastify";
-import ProductCardSkeleton from "../../../../Components/ProductCardSkeleton.jsx";
+import ProductCardSkeleton from "../../../../Layout/Skeleton/ProductCardSkeleton.jsx";
 
 const UserWishlist = () => {
   const { axios, user, wishlist, removeFromWishlist } = useAppContext();

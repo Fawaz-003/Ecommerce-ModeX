@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, MapPin, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppContext } from "../../../../Context/AppContext";
+import AddressCardSkeleton from "../../../../Layout/Skeleton/AddressCardSkeleton";
 
 const OpenModel = ({
   isOpen,
@@ -261,8 +262,9 @@ const UserAddresses = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <AddressCardSkeleton />
+            <AddressCardSkeleton />
           </div>
         ) : addresses.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">

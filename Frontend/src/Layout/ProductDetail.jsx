@@ -13,7 +13,7 @@ import ProductReviews from "./ProductReviews";
 import Modal from "../Layout/Modal";
 import AddReviewForm from "./AddReviewForm";
 import { MessageSquarePlus } from "lucide-react";
-import ProductDetailSkeleton from "./ProductDetailSkeleton";
+import ProductDetailSkeleton from "./Skeleton/ProductDetailSkeleton";
 
 const ProductDetail = () => {
   const { id: productId } = useParams();
