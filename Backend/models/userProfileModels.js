@@ -39,6 +39,8 @@ const userProfileSchema = new mongoose.Schema(
     reviews: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        productName: { type: String },
+        productImage: { type: String },
         rating: { type: Number, min: 1, max: 5 },
         comment: { type: String },
         createdAt: { type: Date, default: Date.now },

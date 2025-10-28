@@ -66,7 +66,7 @@ export const AppContextProvider = ({ children }) => {
 
   const addToWishlist = useCallback(async (productId) => {
     if (!user?._id) return;
-    await axios.post(`/api/wishlist/add/${user._id}`, { productId });
+    await axios.post(`/api/wishlist/add/${user._id}`, { productId }); 
     setWishlist((prev) => {
       if (prev.includes(productId)) return prev;
       return [...prev, productId];

@@ -78,8 +78,7 @@ export default function EditCategory() {
       const response = await axios.put(`/api/category/edit/${id}`, payload);
       if (response.data.success) {
         toast.success(response.data.message || "Category updated successfully!", {
-          position: "top-right",
-          style: { margin: "45px" },
+          position: "top-right", // Keep default position
         });
         navigate("/admin/categories");
       } else {
@@ -87,8 +86,7 @@ export default function EditCategory() {
       }
     } catch (error) {
       toast.error(error.message || "Error updating category", {
-        position: "top-right",
-        style: { margin: "45px" },
+        position: "top-right", // Keep default position
       });
     }
   };

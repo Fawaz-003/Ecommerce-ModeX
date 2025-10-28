@@ -75,10 +75,7 @@ const Login = () => {
     } catch (err) {
       toast.error(
         err.response?.data?.message || err.message || "Login failed",
-        {
-          position: "top-right",
-          style: { margin: "45px" },
-        }
+        { position: "top-right" } // Keep default position
       );
       setForm({ email: "", password: "" });
     } finally {

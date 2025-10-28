@@ -120,7 +120,7 @@ const SearchBar = () => {
             onClick={() => setIsOpen(false)}
           />
           
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-20 max-h-96 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-20 max-h-[70vh] sm:max-h-96 overflow-y-auto">
             {/* Search Suggestions */}
             {searchSuggestions.length > 0 && (
               <div className="p-4 border-b border-gray-100">
