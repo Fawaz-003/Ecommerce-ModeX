@@ -40,10 +40,10 @@ const ProductReviews = ({ reviews, averageRating }) => {
   };
 
   const getRatingBarColorClass = (star) => {
-    if (star === 5) return "bg-green-700";
-    if (star === 4) return "bg-lime-600";
-    if (star === 3) return "bg-yellow-500";
-    if (star === 2) return "bg-orange-500";
+    if (star === 5) return "bg-green-800";
+    if (star === 4) return "bg-green-800";
+    if (star === 3) return "bg-green-800";
+    if (star === 2) return "bg-yellow-500";
     return "bg-red-500";
   };
 
@@ -64,13 +64,13 @@ const ProductReviews = ({ reviews, averageRating }) => {
           {ratingDistribution.map(({ star, count, percentage }) => (
             <div key={star} className="flex items-center gap-4">
               <p className="text-sm font-medium text-gray-600 flex items-center">
-                {star} <Star size={14} className="ml-1 text-gray-400" />
+                {star} <Star size={14} className="ml-1 text-black" />
               </p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
                 <div
                   className={`${getRatingBarColorClass(
                     star
-                  )} h-2.5 rounded-full`}
+                  )} h-1.5 rounded-full`}
                   style={{ width: `${percentage}%` }}
                 ></div>
               </div>
