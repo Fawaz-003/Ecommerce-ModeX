@@ -3,7 +3,7 @@ import MobileSort from "../Layout/MobileSort";
 import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, ChevronRight } from "lucide-react";
 import ProductCard from "../Components/ProductCard";
-import ProductCardSkeleton from "../Components/ProductCardSkeleton.jsx";
+import ProductCardSkeleton from "../Layout/Skeleton/ProductCardSkeleton.jsx";
 import { useProductFilters } from "../Hooks/useProductFilters.js";
 import { useAppContext } from "../Context/AppContext";
 

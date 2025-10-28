@@ -2,7 +2,7 @@ import ProductCard from "../../Components/ProductCard";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../Context/AppContext";
-import ProductCardSkeleton from "../../Components/ProductCardSkeleton.jsx";
+import ProductCardSkeleton from "../Skeleton/ProductCardSkeleton.jsx";
 
 const LatestCollections = () => {
   const [products, setAllProducts] = useState([]);

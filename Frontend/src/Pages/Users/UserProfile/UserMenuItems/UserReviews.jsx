@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../../../../Context/AppContext";
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import UserReviewSkeleton from "../../../../Layout/Skeleton/UserReviewSkeleton";
 
 const UserReviews = () => {
   const { axios, user } = useAppContext();
@@ -45,7 +46,13 @@ const UserReviews = () => {
   }, [user, axios]);
 
   if (loading) {
-    return <div className="text-center p-4">Loading your reviews...</div>;
+    return (
+      <div className="space-y-4">
+        <div className="h-8 bg-gray-300 rounded w-1/3 animate-pulse mb-4"></div>
+        <UserReviewSkeleton />
+        <UserReviewSkeleton />
+      </div>
+    );
   }
 
   if (error) {
