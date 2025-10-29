@@ -14,8 +14,6 @@ import Modal from "../Layout/Modal";
 import AddReviewForm from "./AddReviewForm";
 import { MessageSquarePlus } from "lucide-react";
 import ProductDetailSkeleton from "./Skeleton/ProductDetailSkeleton.jsx";
-import { useRecentlyViewed } from "../Hooks/useRecentlyViewed.js";
-import ProductCard from "../Components/ProductCard.jsx";
 
 const ProductDetail = () => {
   const { id: productId } = useParams();
@@ -31,10 +29,6 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [similarProducts, setSimilarProducts] = useState([]);
-  const [loadingSimilar, setLoadingSimilar] = useState(false);
-
-  const { recentlyViewed, addProductToRecentlyViewed } = useRecentlyViewed();
 
   const userHasReviewed =
     user && fetchProduct?.reviews.some((review) => review.user?._id === user._id);
@@ -42,27 +36,6 @@ const ProductDetail = () => {
   useEffect(() => {
     fetchSingleProduct();
   }, [productId]);
-
-  useEffect(() => {
-    if (fetchProduct?._id && fetchProduct?.category) {
-      // Add to recently viewed
-      addProductToRecentlyViewed(fetchProduct);
-
-      // Fetch similar products
-      const fetchSimilar = async () => {
-        setLoadingSimilar(true);
-        try {
-          const res = await axios.get(`/api/products/similar/${fetchProduct._id}/${fetchProduct.category}`);
-          setSimilarProducts(res.data.products || []);
-        } catch (error) {
-          console.error("Failed to fetch similar products:", error);
-        } finally {
-          setLoadingSimilar(false);
-        }
-      };
-      fetchSimilar();
-    }
-  }, [fetchProduct, axios, addProductToRecentlyViewed]);
 
   const fetchSingleProduct = async () => {
     try {
@@ -146,24 +119,6 @@ const ProductDetail = () => {
     setIsReviewModalOpen(false);
     fetchSingleProduct(); // Refetch product to show the new review
   };
-
-  // Filter out the current product from the recently viewed list
-  const filteredRecentlyViewed = recentlyViewed.filter(p => p._id !== productId);
-
-  const ProductCarousel = ({ title, products, loading }) => (
-    <div className="mt-12 py-8 border-t border-gray-200">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {loading ? (
-          [...Array(5)].map((_, i) => <div key={i} className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>)
-        ) : products.length > 0 ? (
-          products.map((product) => <ProductCard key={product._id} product={product} />)
-        ) : (
-          <p className="text-gray-500 col-span-full">No products to show.</p>
-        )}
-      </div>
-    </div>
-  );
 
   if (!fetchProduct) {
     return <ProductDetailSkeleton />;
@@ -398,21 +353,6 @@ const ProductDetail = () => {
         >
           <AddReviewForm productId={productId} onReviewSubmit={handleReviewAdded} />
         </Modal>
-
-        {/* Similar Products Section */}
-        <ProductCarousel
-          title="Similar Products"
-          products={similarProducts}
-          loading={loadingSimilar}
-        />
-
-        {/* Recently Viewed Products Section */}
-        {filteredRecentlyViewed.length > 0 && (
-          <ProductCarousel
-            title="Recently Viewed"
-            products={filteredRecentlyViewed}
-          />
-        )}
       </div>
     </div>
   );

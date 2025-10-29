@@ -14,7 +14,10 @@ export const requireSignIn = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded;
+    // Ensure req.user._id is consistently available, regardless of JWT payload structure
+    const user = await userModel.findById(decoded.id || decoded._id).select("_id");
+    if (!user) return res.status(401).json({ success: false, message: "User not found" });
+    req.user = user;
     next();
   } catch (err) {
     return res

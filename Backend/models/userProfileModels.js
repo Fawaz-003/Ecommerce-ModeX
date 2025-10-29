@@ -36,6 +36,12 @@ const userProfileSchema = new mongoose.Schema(
         purchasedAt: { type: Date },
       },
     ],
+    recentlyViewed: [
+      {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        viewedAt: { type: Date, default: Date.now },
+      },
+    ],
     reviews: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
