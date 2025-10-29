@@ -308,30 +308,4 @@ const addReview = async (req, res) => {
   }
 };
 
-const getSimilarProducts = async (req, res) => {
-  try {
-    const { productId, categoryId } = req.params;
-
-    if (!categoryId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Category ID is required" });
-    }
-
-    // Find products in the same category, excluding the current one, and limit the result.
-    const similarProducts = await Product.find({
-      category: categoryId,
-      _id: { $ne: productId }, // $ne => not equal
-    }).limit(8);
-
-    return res.status(200).json({ success: true, products: similarProducts });
-  } catch (error) {
-    console.error("Error fetching similar products:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while fetching similar products",
-    });
-  }
-};
-
-export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct, getWishlistProducts, addReview, getSimilarProducts };
+export { addProduct, updateProduct, ProductList, singleProduct, deleteProduct, getWishlistProducts, addReview };
