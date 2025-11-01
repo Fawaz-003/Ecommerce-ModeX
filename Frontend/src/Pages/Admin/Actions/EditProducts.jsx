@@ -589,15 +589,15 @@ const EditProducts = () => {
                       Color *
                     </label>
                     <input
-                      type="text"
+                      type="color"
                       value={variant.color}
                       onChange={(e) =>
                         handleVariantChange(index, "color", e.target.value)
                       }
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      className={`w-full h-10 px-1 py-1 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer ${
                         errors[`variant_${index}_color`] ? 'border-red-500 bg-red-50' : 'border-gray-300'
                       }`}
-                      placeholder="e.g., Red, Black"
+                      title="Select a color"
                     />
                     {errors[`variant_${index}_color`] && (
                       <p className="text-xs text-red-600 mt-1">{errors[`variant_${index}_color`]}</p>
