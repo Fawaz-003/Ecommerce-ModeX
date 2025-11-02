@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "../assets/Logo.png"
 import { ShoppingCart, User, Menu, X, Heart } from "lucide-react";
+import { getCartItemCount } from "../utils/cartUtils";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,6 +35,21 @@ const Navbar = () => {
     
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
+  }, []);
+
+  // Update cart count on mount and when cart changes
+  useEffect(() => {
+    const updateCartCount = () => {
+      setItems(getCartItemCount());
+    };
+
+    updateCartCount();
+    
+    // Listen for cart updates
+    window.addEventListener('cartUpdated', updateCartCount);
+    return () => {
+      window.removeEventListener('cartUpdated', updateCartCount);
+    };
   }, []);
 
   const navLinkClass = ({ isActive }) =>
@@ -85,9 +101,11 @@ const Navbar = () => {
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200 relative"
             >
               <ShoppingCart size={20} />
-              <span className="absolute -top-0 -right-0 bg-red-500 font-medium text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
-                {items}
-              </span>
+              {items > 0 && (
+                <span className="absolute -top-0 -right-0 bg-red-500 font-medium text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
+                  {items}
+                </span>
+              )}
             </NavLink>
 
 
