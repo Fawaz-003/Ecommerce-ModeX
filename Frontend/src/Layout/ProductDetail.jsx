@@ -14,6 +14,7 @@ import Modal from "../Layout/Modal";
 import AddReviewForm from "./AddReviewForm";
 import { MessageSquarePlus } from "lucide-react";
 import ProductDetailSkeleton from "./Skeleton/ProductDetailSkeleton.jsx";
+import { addToCart as addToCartUtil } from "../utils/cartUtils";
 
 const ProductDetail = () => {
   const { id: productId } = useParams();
@@ -29,6 +30,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const userHasReviewed =
     user && fetchProduct?.reviews.some((review) => review.user?._id === user._id);
@@ -118,6 +120,59 @@ const ProductDetail = () => {
   const handleReviewAdded = () => {
     setIsReviewModalOpen(false);
     fetchSingleProduct(); // Refetch product to show the new review
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedVariant) {
+      toast.error("Please select size and color");
+      return;
+    }
+
+    if (selectedVariant.quantity === 0) {
+      toast.error("This variant is out of stock");
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      const result = addToCartUtil(fetchProduct, selectedVariant, 1);
+      
+      if (result.success) {
+        toast.success(result.message || "Added to cart successfully", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      } else {
+        toast.error(result.message || "Failed to add to cart", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart", {
+        position: "top-right",
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!selectedVariant) {
+      toast.error("Please select size and color");
+      return;
+    }
+
+    if (selectedVariant.quantity === 0) {
+      toast.error("This variant is out of stock");
+      return;
+    }
+
+    // Add to cart and redirect to cart page
+    handleAddToCart();
+    setTimeout(() => {
+      navigate("/cart");
+    }, 500);
   };
 
   if (!fetchProduct) {
@@ -315,10 +370,18 @@ const ProductDetail = () => {
             <p className="text-gray-600">{fetchProduct.description}</p>
 
             <div className="flex items-center mt-10 gap-4 text-base">
-              <button className="w-full py-3.5 cursor-pointer font-medium bg-gray-200 text-gray-800 hover:bg-gray-300 transition">
-                Add to Cart
+              <button 
+                onClick={handleAddToCart}
+                disabled={!selectedVariant || selectedVariant.quantity === 0 || isAddingToCart}
+                className="w-full py-3.5 cursor-pointer font-medium bg-gray-200 text-gray-800 hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
               </button>
-              <button className="w-full py-3.5 cursor-pointer font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition">
+              <button 
+                onClick={handleBuyNow}
+                disabled={!selectedVariant || selectedVariant.quantity === 0}
+                className="w-full py-3.5 cursor-pointer font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Buy now
               </button>
             </div>
