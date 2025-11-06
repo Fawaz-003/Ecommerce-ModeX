@@ -1,7 +1,7 @@
 import { createContext, useMemo, useState, useContext, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosLib from "axios";
-import { toast } from "react-toastify";
+import { syncLocalCartToBackend } from "../utils/cartUtils";
 
 export const AppContext = createContext({
   user: null,
@@ -86,6 +86,12 @@ export const AppContextProvider = ({ children }) => {
     } else {
       localStorage.removeItem("user");
       setWishlist([]);
+    }
+
+    // If user just logged in and there's a local cart, sync it.
+    const localCart = localStorage.getItem('local-cart');
+    if (user && localCart) {
+      syncLocalCartToBackend(axios);
     }
   }, [user, fetchWishlist]);
 

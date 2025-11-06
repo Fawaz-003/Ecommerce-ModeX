@@ -122,7 +122,7 @@ const ProductDetail = () => {
     fetchSingleProduct(); // Refetch product to show the new review
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!selectedVariant) {
       toast.error("Please select size and color");
       return;
@@ -135,7 +135,7 @@ const ProductDetail = () => {
 
     setIsAddingToCart(true);
     try {
-      const result = addToCartUtil(fetchProduct, selectedVariant, 1);
+      const result = await addToCartUtil(axios, fetchProduct, selectedVariant, 1);
       
       if (result.success) {
         toast.success(result.message || "Added to cart successfully", {
@@ -157,7 +157,7 @@ const ProductDetail = () => {
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!selectedVariant) {
       toast.error("Please select size and color");
       return;
@@ -169,10 +169,31 @@ const ProductDetail = () => {
     }
 
     // Add to cart and redirect to cart page
-    handleAddToCart();
-    setTimeout(() => {
-      navigate("/cart");
-    }, 500);
+    setIsAddingToCart(true);
+    try {
+      const result = await addToCartUtil(axios, fetchProduct, selectedVariant, 1);
+      
+      if (result.success) {
+        toast.success("Item added to cart", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+        setTimeout(() => {
+          navigate("/cart");
+        }, 500);
+      } else {
+        toast.error(result.message || "Failed to add to cart", {
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart", {
+        position: "top-right",
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   if (!fetchProduct) {
@@ -379,10 +400,10 @@ const ProductDetail = () => {
               </button>
               <button 
                 onClick={handleBuyNow}
-                disabled={!selectedVariant || selectedVariant.quantity === 0}
+                disabled={!selectedVariant || selectedVariant.quantity === 0 || isAddingToCart}
                 className="w-full py-3.5 cursor-pointer font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Buy now
+                {isAddingToCart ? 'Adding...' : 'Buy now'}
               </button>
             </div>
 

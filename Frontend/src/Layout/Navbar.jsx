@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "../assets/Logo.png"
 import { ShoppingCart, User, Menu, X, Heart } from "lucide-react";
-import { getCartItemCount } from "../utils/cartUtils";
+import { getCart, getCartItemCount } from "../utils/cartUtils";
+import { useAppContext } from "../Context/AppContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profilePath, setProfilePath] = useState("/login");
   const [items, setItems] = useState(0);
+  const { axios, user } = useAppContext();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -39,18 +41,16 @@ const Navbar = () => {
 
   // Update cart count on mount and when cart changes
   useEffect(() => {
-    const updateCartCount = () => {
-      setItems(getCartItemCount());
+    const updateCartCount = async () => {
+      const cart = await getCart(axios);
+      setItems(getCartItemCount(cart));
     };
 
     updateCartCount();
     
-    // Listen for cart updates
     window.addEventListener('cartUpdated', updateCartCount);
-    return () => {
-      window.removeEventListener('cartUpdated', updateCartCount);
-    };
-  }, []);
+    return () => window.removeEventListener('cartUpdated', updateCartCount);
+  }, [user, axios]);
 
   const navLinkClass = ({ isActive }) =>
     isActive

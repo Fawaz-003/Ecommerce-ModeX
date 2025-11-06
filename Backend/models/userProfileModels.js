@@ -21,13 +21,22 @@ const userProfileSchema = new mongoose.Schema(
         city: { type: String },
         state: { type: String },
         country: { type: String },
-        postalCode: { type: Number }, 
+        postalCode: { type: Number },
       },
     ],
     wishlist: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
         addedAt: { type: Date, default: Date.now },
+      },
+    ],
+    cart: [
+      {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+        quantity: { type: Number, required: true, default: 1 },
+        size: { type: String },
+        color: { type: String },
+        price: { type: Number },
       },
     ],
     orders: [

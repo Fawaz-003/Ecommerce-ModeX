@@ -12,6 +12,7 @@ import categoryRouter from "./routes/categoryRoutes.js";
 import userProfileRouter from "./routes/userProfileRoutes.js";
 import wishlistRouter from "./routes/wishlistRoutes.js";
 import addressRouter from "./routes/addressRoutes.js";
+import cartRouter from "./routes/cartRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +43,7 @@ app.use("/api/category", categoryRouter);
 app.use("/api/profile", userProfileRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/addresses", addressRouter);
+app.use("/api/cart", cartRouter);
 
 app.get("/ping", (req, res) => {
   res.status(200).json({ ok: true });
