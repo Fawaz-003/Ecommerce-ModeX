@@ -43,6 +43,7 @@ import UserRoute from "./Routes/UersRoute";
 import { useAppContext } from "./Context/AppContext";
 import ProductDetail from "./Layout/ProductDetail";
 import AuthSuccess from "./Pages/Users/AuthSuccess";
+import Checkout from "./Pages/Checkout";
 
 const App = () => {
   const location = useLocation();
@@ -75,6 +76,7 @@ const App = () => {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/auth-success" element={<AuthSuccess />} />

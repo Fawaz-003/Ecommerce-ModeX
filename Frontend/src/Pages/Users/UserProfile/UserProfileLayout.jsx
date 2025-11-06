@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   User2,
   Heart,
@@ -11,18 +11,11 @@ import {
   Bell,
   ChevronRight,
   User,
+  Menu,
+  X,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import Logout from "../../../Components/Logout";
-import PersonalInfo from "./UserMenuItems/PersonalInfo";
-import Wishlist from "./UserMenuItems/UserWishlist";
-import Orders from "./UserMenuItems/UserOrders";
-import Addresses from "./UserMenuItems/UserAddresses";
-import Returns from "./UserMenuItems/UserReturns";
-import Payments from "./UserMenuItems/UserPayments";
-import Reviews from "./UserMenuItems/UserReviews";
-import Coupons from "./UserMenuItems/UserCoupons";
-import Notifications from "./UserMenuItems/UserNotification";
 
 const UserProfile = () => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -32,6 +25,7 @@ const UserProfile = () => {
     email: "",
     avatar: "",
   });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -104,15 +98,34 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden flex-grow">
-                <div className="max-h-[calc(100vh-250px)] overflow-y-auto divide-y divide-gray-100">
-                  {menuItems.map((item, index) => (
+              {/* Mobile Menu Toggle */}
+              <div className="md:hidden bg-white rounded-lg shadow-sm mb-4">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="w-full p-3 flex items-center justify-between text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <span>My Account Menu</span>
+                  {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
+              </div>
+
+              {/* Menu Items Container */}
+              <div
+                className={`bg-white rounded-lg shadow-sm overflow-hidden flex-grow ${
+                  isMenuOpen ? "block" : "hidden"
+                } md:block`}
+              >
+                <div className="max-h-[calc(100vh-350px)] overflow-y-auto divide-y divide-gray-100 md:max-h-full">
+                  {menuItems.map((item) => (
                     <NavLink
-                      key={index}
+                      key={item.slug}
                       to={`/profile/${item.slug}`}
+                      onClick={() => setIsMenuOpen(false)} // Close menu on navigation
                       className={({ isActive }) =>
                         `p-3 flex items-center justify-between group transition-all duration-100 ${
-                          isActive ? "bg-blue-50 border-l-4 border-blue-500 text-blue-600" : "hover:bg-gray-50"
+                          isActive
+                            ? "bg-blue-50 border-l-4 border-blue-500 text-blue-600"
+                            : "hover:bg-gray-50"
                         }`
                       }
                     >
@@ -126,10 +139,9 @@ const UserProfile = () => {
                     </NavLink>
                   ))}
                 </div>
-              </div>
-
-              <div className="mt-6">
-                <Logout />
+                <div className="p-2 border-t border-gray-100">
+                  <Logout />
+                </div>
               </div>
             </div>
           </div>

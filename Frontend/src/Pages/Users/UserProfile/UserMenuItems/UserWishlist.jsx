@@ -24,17 +24,26 @@ const UserWishlist = () => {
         return;
       }
 
+      const startTime = Date.now();
       try {
         setLoading(true);
         // Fetch actual product details for each ID in the global wishlist
         const productRes = await axios.post("/api/products/bulk", { ids: wishlist });
         setWishlistProducts(productRes.data.products);
       } catch (err) {
-        console.error(err);
         setError("Failed to load wishlist products");
         toast.error("Failed to load wishlist products");
       } finally {
-        setLoading(false);
+        const elapsedTime = Date.now() - startTime;
+        const minDisplayTime = 700; // 0.7 seconds
+
+        if (elapsedTime < minDisplayTime) {
+          setTimeout(() => {
+            setLoading(false);
+          }, minDisplayTime - elapsedTime);
+        } else {
+          setLoading(false);
+        }
       }
     };
 
@@ -43,9 +52,15 @@ const UserWishlist = () => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-        {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
-      </div>
+      <>
+        {/* Skeleton for the title */}
+        <div className="h-7 w-48 bg-gray-200 rounded-md animate-pulse mb-4"></div>
+        
+        {/* Skeleton for the product grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2">
+          {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
+        </div>
+      </>
     );
   }
   if (error) return <p className="text-center py-16 text-red-600">{error}</p>;
