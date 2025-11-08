@@ -11,9 +11,9 @@ import AddressModal from "../Components/AddressModal";
 
 const Checkout = () => {
   const { user, axios, navigate } = useAppContext();
-  const [currentStep, setCurrentStep] = useState(1); // 1: Login, 2: Address, 3: Payment, 4: Review
+  const [currentStep, setCurrentStep] = useState(2); 
   const [cartItems, setCartItems] = useState([]);
-  const [addresses, setAddresses] = useState([]);
+  const [addresses, setAddresses] = useState([]); 
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLoginVerificationComplete, setIsLoginVerificationComplete] =
@@ -22,7 +22,7 @@ const Checkout = () => {
   const [addressToEdit, setAddressToEdit] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [paymentData, setPaymentData] = useState({
-    paymentMethod: "cod",
+    paymentMethod: "online",
     cardNumber: "",
     expiration: "",
     cvv: "",
@@ -131,6 +131,67 @@ const Checkout = () => {
     }
   };
 
+  const handlePlaceOrder = async () => {
+    if (!selectedAddress) {
+      toast.error("Please select a shipping address.");
+      return;
+    }
+
+    if (paymentData.paymentMethod === "cod") {
+      toast.success("Order placed successfully!");
+      navigate("/order-success");
+
+    } else if (paymentData.paymentMethod === "online") {
+      // Handle Razorpay online payment
+      try {
+        // 1. Get Razorpay Key
+        const { data: { key } } = await axios.get("/api/payment/getkey");
+
+        // 2. Create a Razorpay Order
+        const { data: { order } } = await axios.post("/api/payment/checkout", {
+          amount: total,
+        });
+
+        // 3. Configure and open Razorpay Checkout
+        const options = {
+          key,
+          amount: order.amount,
+          currency: "INR",
+          name: "ModeX",
+          description: "E-commerce Transaction",
+          image: "/images/logo.png", // Add your logo in the public folder
+          order_id: order.id,
+          handler: async function (response) {
+            // 4. Verify payment on the backend
+            const verificationResponse = await axios.post('/api/payment/paymentverification', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              addressId: selectedAddress._id,
+            });
+
+            if (verificationResponse.data.success) {
+              navigate(`/paymentsuccess?reference=${response.razorpay_payment_id}`);
+            } else {
+              toast.error("Payment verification failed.");
+            }
+          },
+          prefill: {
+            name: user.name,
+            email: user.email,
+            contact: selectedAddress.phone,
+          },
+          theme: { color: "#4f46e5" },
+        };
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (error) {
+        console.error("Razorpay integration error:", error);
+        toast.error("An error occurred during payment processing.");
+      }
+    }
+  };
+
   const handleStepClick = (stepNumber) => {
     // Allow navigation only to previous, completed steps
     if (stepNumber < currentStep) {
@@ -226,17 +287,6 @@ const Checkout = () => {
                   handleInputChange={handlePaymentInputChange}
                   onContinue={() => setCurrentStep(4)}
                 />
-              )}
-              {currentStep === 4 && ( // Final Review Step
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                    Review Your Order
-                  </h3>
-                  <p className="text-gray-600">
-                    Please review your order details on the right and click
-                    "Place Order" to complete your purchase.
-                  </p>
-                </div>
               )}
             </div>
           </div>
@@ -336,8 +386,8 @@ const Checkout = () => {
 
                 {/* Action Button */}
                 <button
-                  // onClick={handlePlaceOrder} // TODO: Implement place order logic
-                  disabled={currentStep < 4}
+                  onClick={handlePlaceOrder}
+                  disabled={currentStep < 3 || !selectedAddress}
                   className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Place Order

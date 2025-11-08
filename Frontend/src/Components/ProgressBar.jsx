@@ -1,12 +1,11 @@
 import React from 'react';
 import { Check, User, Truck, CreditCard } from 'lucide-react';
 
-const ProgressBar = ({ currentStep }) => {
+const ProgressBar = ({ currentStep, onStepClick }) => {
   const steps = [
     { number: 1, label: 'Login', icon: User },
     { number: 2, label: 'Address', icon: Truck },
     { number: 3, label: 'Payment', icon: CreditCard },
-    { number: 4, label: 'Review', icon: Check },
   ];
 
   return (

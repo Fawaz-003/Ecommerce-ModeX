@@ -1,14 +1,13 @@
-// cartControllers.js - FIXED VERSION
 
 import UserProfile from "../models/userProfileModels.js";
-import productModel from "../models/productModels.js"; // Import the product model
+import productModel from "../models/productModels.js";
 import mongoose from "mongoose";
 
 const getCart = async (req, res) => {
   try {
     const userProfile = await UserProfile.findOne({ user: req.user._id }).populate({
       path: "cart.product",
-      model: "product" // Use lowercase "product" to match your model registration
+      model: "product"
     });
     
     if (!userProfile) {
@@ -17,7 +16,6 @@ const getCart = async (req, res) => {
     
     res.status(200).json(userProfile.cart || []);
   } catch (error) {
-    console.error("Error fetching cart:", error);
     res.status(500).json({ message: "Error fetching cart", error: error.message });
   }
 };
@@ -25,8 +23,6 @@ const getCart = async (req, res) => {
 const addToCart = async (req, res) => {
   try {
     const { productId, quantity, size, color, price } = req.body;
-    
-    console.log("Received cart data:", { productId, quantity, size, color, price });
     
     // Validate required fields
     if (!productId || !quantity || !size || !color || !price) {
@@ -50,7 +46,6 @@ const addToCart = async (req, res) => {
     let userProfile = await UserProfile.findOne({ user: req.user._id });
     
     if (!userProfile) {
-      console.log("Creating new user profile for user:", req.user._id);
       // Create user profile if it doesn't exist
       userProfile = new UserProfile({
         user: req.user._id,
@@ -67,11 +62,9 @@ const addToCart = async (req, res) => {
     );
 
     if (existingItemIndex !== -1) {
-      console.log("Updating existing item quantity");
       // Update quantity if item exists
       userProfile.cart[existingItemIndex].quantity += quantity;
     } else {
-      console.log("Adding new item to cart");
       // Add new item to cart
       userProfile.cart.push({ 
         product: productId, 
@@ -83,7 +76,7 @@ const addToCart = async (req, res) => {
     }
 
     await userProfile.save();
-    console.log("Cart saved successfully");
+  
     
     // Populate cart before sending response
     await userProfile.populate({
@@ -96,8 +89,6 @@ const addToCart = async (req, res) => {
       cart: userProfile.cart 
     });
   } catch (error) {
-    console.error("Error adding to cart:", error);
-    console.error("Error stack:", error.stack);
     res.status(500).json({ 
       message: "Error adding to cart", 
       error: error.message 
@@ -154,7 +145,6 @@ const updateCartQuantity = async (req, res) => {
       res.status(404).json({ message: "Item not found in cart" });
     }
   } catch (error) {
-    console.error("Error updating quantity:", error);
     res.status(500).json({ 
       message: "Error updating quantity", 
       error: error.message 
@@ -207,7 +197,6 @@ const removeFromCart = async (req, res) => {
       cart: userProfile.cart 
     });
   } catch (error) {
-    console.error("Error removing item:", error);
     res.status(500).json({ 
       message: "Error removing item", 
       error: error.message 
@@ -231,7 +220,6 @@ const clearCart = async (req, res) => {
       cart: [] 
     });
   } catch (error) {
-    console.error("Error clearing cart:", error);
     res.status(500).json({ 
       message: "Error clearing cart", 
       error: error.message 
