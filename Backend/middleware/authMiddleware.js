@@ -28,7 +28,14 @@ export const requireSignIn = async (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
   try {
-    const user = await userModel.findById(req.user.id).select("role");
+    const userId = req.user._id || req.user.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not authenticated" });
+    }
+
+    const user = await userModel.findById(userId).select("role");
 
     if (!user) {
       return res

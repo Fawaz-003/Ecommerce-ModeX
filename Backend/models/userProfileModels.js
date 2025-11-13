@@ -8,6 +8,8 @@ const userProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    name: { type: String },
+    avatar: { type: String },
     phone: { type: Number },
     gender: { type: String, enum: ["male", "female", "other"] },
     dob: { type: Date },

@@ -13,10 +13,22 @@ export const AppContext = createContext({
   backendURL: "",
 });
 
+// Normalize user object to always have _id (for backward compatibility)
+const normalizeUser = (user) => {
+  if (!user) return null;
+  // If user has id but not _id, convert id to _id (create new object to avoid mutation)
+  if (user.id && !user._id) {
+    const { id, ...rest } = user;
+    return { ...rest, _id: id };
+  }
+  return user;
+};
+
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    return normalizeUser(parsedUser);
   });
   const [wishlist, setWishlist] = useState([]);
 
@@ -57,7 +69,11 @@ export const AppContextProvider = ({ children }) => {
     try {
       const res = await axios.get(`/api/profile/${user._id}`);
       const wishlistItems = res.data.profile.wishlist || [];
-      setWishlist(wishlistItems.map(item => item.product));
+      // The wishlist from the profile can be an array of objects or strings.
+      // We need to handle both cases to get the product ID.
+      setWishlist(
+        wishlistItems.map((item) => (typeof item === 'object' && item.product ? item.product : item))
+      );
     } catch (err) {
       console.error("Failed to fetch wishlist:", err);
       setWishlist([]);
@@ -66,34 +82,52 @@ export const AppContextProvider = ({ children }) => {
 
   const addToWishlist = useCallback(async (productId) => {
     if (!user?._id) return;
-    await axios.post(`/api/wishlist/add/${user._id}`, { productId }); 
-    setWishlist((prev) => {
-      if (prev.includes(productId)) return prev;
-      return [...prev, productId];
-    });
+    try {
+      await axios.post(`/api/wishlist/add/${user._id}`, { productId });
+      setWishlist((prev) => [...new Set([...prev, productId])]);
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      // Optionally, revert state if API call fails
+    }
   }, [axios, user]);
 
   const removeFromWishlist = useCallback(async (productId) => {
     if (!user?._id) return;
-    await axios.delete(`/api/wishlist/remove/${user._id}`, { data: { productId } });
-    setWishlist((prev) => prev.filter((id) => id !== productId));
+    try {
+      await axios.delete(`/api/wishlist/remove/${user._id}`, { data: { productId } });
+      setWishlist((prev) => prev.filter((id) => id !== productId));
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      // Optionally, revert state if API call fails
+    }
   }, [axios, user]);
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
+      // Normalize user to ensure _id is always present (for backward compatibility)
+      const normalizedUser = normalizeUser(user);
+      
+      // If normalization changed the structure (id -> _id), update state and return
+      // The effect will run again with the normalized user
+      if (user.id && !user._id) {
+        setUser(normalizedUser);
+        return;
+      }
+      
+      // User is already normalized, proceed with storage and wishlist fetch
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
       fetchWishlist();
+
+      // If user just logged in and there's a local cart, sync it.
+      const localCart = localStorage.getItem('local-cart');
+      if (localCart) {
+        syncLocalCartToBackend(axios);
+      }
     } else {
       localStorage.removeItem("user");
       setWishlist([]);
     }
-
-    // If user just logged in and there's a local cart, sync it.
-    const localCart = localStorage.getItem('local-cart');
-    if (user && localCart) {
-      syncLocalCartToBackend(axios);
-    }
-  }, [user, fetchWishlist]);
+  }, [user, fetchWishlist, axios]);
 
   const value = useMemo(
     () => ({

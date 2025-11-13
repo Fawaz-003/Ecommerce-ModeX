@@ -9,7 +9,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const { axios, navigate, backendURL } = useAppContext();
+  const { axios, navigate, backendURL, setUser } = useAppContext();
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -43,7 +43,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before showing loading
+    if (!form.email || !form.password) {
+      toast.error("Please enter both email and password", {
+        position: "top-right",
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.error("Please enter a valid email address", {
+        position: "top-right",
+      });
+      return;
+    }
+
+    // Now show loading after validation
     setIsLoading(true);
+    
     try {
       const res = await axios.post("/api/users/login", form);
       const data = res.data;
@@ -64,6 +84,7 @@ const Login = () => {
 
       toast.success(data.message, {
         position: "top-right",
+        autoClose: 1500,
         style: { margin: "45px" },
       });
       setForm({ email: "", password: "" });
@@ -71,11 +92,12 @@ const Login = () => {
       setTimeout(() => {
         if (data.user.role === 1) navigate("/admin/dashboard");
         else navigate("/profile");
-      });
+        setUser(data.user); // Update global user state
+      }, 1500);
     } catch (err) {
       toast.error(
         err.response?.data?.message || err.message || "Login failed",
-        { position: "top-right" } // Keep default position
+        { position: "top-right" }
       );
       setForm({ email: "", password: "" });
     } finally {
@@ -190,9 +212,17 @@ const Login = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="w-full flex  hover:cursor-pointer justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition duration-200"
+                disabled={isLoading}
+                className="w-full flex hover:cursor-pointer justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign in
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Logging in...</span>
+                  </div>
+                ) : (
+                  "Sign in"
+                )}
               </button>
               {isLoading && <Loading message="Logging in..." variant="green" />}
             </div>

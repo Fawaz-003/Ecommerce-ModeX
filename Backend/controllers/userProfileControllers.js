@@ -9,7 +9,7 @@ const createProfile = async (req, res) => {
     }
 
     // Ensure only normal users (role 0) get a profile
-    const user = await userModel.findById(userId).select("role");
+    const user = await userModel.findById(userId).select("role name avatar");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
@@ -22,7 +22,12 @@ const createProfile = async (req, res) => {
       return res.status(200).json({ success: true, profile: existingProfile });
     }
 
-    const profile = await UserProfile.create({ user: userId });
+    const profileData = {
+      user: userId,
+      name: user.name,
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`,
+    };
+    const profile = await UserProfile.create(profileData);
     return res.status(201).json({ success: true, profile });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -32,11 +37,12 @@ const createProfile = async (req, res) => {
 const createEditProfile = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { phone, gender, dob } = req.body;
+    const { name, phone, gender, dob } = req.body;
 
     let profile = await UserProfile.findOne({ user: userId });
 
     if (profile) {
+      profile.name = name || profile.name;
       profile.phone = phone || profile.phone;
       profile.gender = gender || profile.gender;
       profile.dob = dob || profile.dob;
@@ -47,11 +53,18 @@ const createEditProfile = async (req, res) => {
         .json({ success: true, message: "Profile updated", profile });
     }
 
+    const user = await userModel.findById(userId).select("name avatar");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
     profile = await UserProfile.create({
       user: userId,
+      name: name || user.name,
       phone,
       gender,
       dob,
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || user.name)}&background=random`,
     });
 
     res
@@ -65,14 +78,27 @@ const createEditProfile = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.userId;
+    
+    // Validate userId format (MongoDB ObjectId)
+    if (!userId || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ success: false, message: "Invalid user ID format" });
+    }
+
     const profile = await UserProfile.findOne({ user: userId });
     if (!profile) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Create your Profile" });
+      // Return empty wishlist instead of error for better UX
+      return res.status(200).json({ 
+        success: true, 
+        profile: { 
+          wishlist: [],
+          cart: [],
+          addresses: []
+        } 
+      });
     }
     res.status(200).json({ success: true, profile });
   } catch (error) {
+    console.error("Error fetching profile:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

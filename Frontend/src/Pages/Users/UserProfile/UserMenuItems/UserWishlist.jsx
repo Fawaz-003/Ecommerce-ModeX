@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import ProductCard from "../../../../Components/ProductCard.jsx";
 import { useAppContext } from "../../../../Context/AppContext.jsx";
-import { toast } from "react-toastify";
 import ProductCardSkeleton from "../../../../Layout/Skeleton/ProductCardSkeleton.jsx";
+import { Heart, ShoppingBag } from "lucide-react";
 
 const UserWishlist = () => {
   const { axios, user, wishlist, removeFromWishlist } = useAppContext();
@@ -32,7 +32,6 @@ const UserWishlist = () => {
         setWishlistProducts(productRes.data.products);
       } catch (err) {
         setError("Failed to load wishlist products");
-        toast.error("Failed to load wishlist products");
       } finally {
         const elapsedTime = Date.now() - startTime;
         const minDisplayTime = 700; // 0.7 seconds
@@ -65,7 +64,23 @@ const UserWishlist = () => {
   }
   if (error) return <p className="text-center py-16 text-red-600">{error}</p>;
   if (wishlist.length === 0 || wishlistProducts.length === 0) {
-    return <p className="text-center py-16">Your wishlist is empty</p>;
+    return (
+      <div className="text-center py-16">
+        <Heart size={48} className="mx-auto text-red-500 mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Your Wishlist is Empty
+        </h3>
+        <p className="text-gray-600 mb-4">
+          Looks like you haven’t added anything to your wishlist yet.
+        </p>
+        <button
+          onClick={() => (window.location.href = "/collections")}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto w-fit"
+        >
+          <ShoppingBag size={18} /> Start Shopping
+        </button>
+      </div>
+    );
   }
 
   return (

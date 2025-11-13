@@ -7,6 +7,24 @@ const createToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
+// Function to generate avatar from user initials
+const generateAvatarFromInitials = (name) => {
+  if (!name) return `https://ui-avatars.com/api/?name=User&background=random`;
+  
+  const nameParts = name.trim().split(/\s+/);
+  let initials = "";
+  
+  if (nameParts.length === 1) {
+    // Single name: take first letter
+    initials = nameParts[0].charAt(0).toUpperCase();
+  } else {
+    // Multiple names: take first letter of first and last name
+    initials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+  }
+  
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=random&size=200&bold=true`;
+};
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -35,16 +53,23 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Generate avatar from initials if not already set (for email/password users)
+    if (!user.avatar) {
+      user.avatar = generateAvatarFromInitials(user.name);
+      await user.save();
+    }
+
     const token = createToken(user._id, user.role);
     return res.status(200).json({
       success: true,
       message: "Login Successful",
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -96,11 +121,15 @@ const registerUser = async (req, res) => {
       role = 1;
     }
 
+    // Generate avatar from initials for new email/password users
+    const avatar = generateAvatarFromInitials(name);
+
     const newUser = new userModel({
       name,
       email,
       password: hashedPassword,
       role,
+      avatar,
     });
 
     const savedUser = await newUser.save();
@@ -111,10 +140,11 @@ const registerUser = async (req, res) => {
       message: "Registration Successful",
       token,
       user: {
-        id: savedUser._id,
+        _id: savedUser._id,
         name: savedUser.name,
         email: savedUser.email,
         role: savedUser.role,
+        avatar: savedUser.avatar,
       },
     });
   } catch (error) {
@@ -145,16 +175,23 @@ const adminLogin = async (req, res) => {
       });
     }
 
+    // Generate avatar from initials if not already set
+    if (!user.avatar) {
+      user.avatar = generateAvatarFromInitials(user.name);
+      await user.save();
+    }
+
     const token = createToken(user._id, user.role);
     return res.status(200).json({
       success: true,
       message: "Admin Login Successful",
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
@@ -186,6 +223,12 @@ const getMe = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await userModel.findById(decoded.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Generate avatar from initials if not already set (for email/password users)
+    if (!user.avatar) {
+      user.avatar = generateAvatarFromInitials(user.name);
+      await user.save();
+    }
 
     res.json({ user });
   } catch (err) {

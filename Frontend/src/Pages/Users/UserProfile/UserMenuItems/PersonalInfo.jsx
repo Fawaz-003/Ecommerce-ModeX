@@ -21,6 +21,7 @@ const PersonalInfo = () => {
     reviews: [],
   });
   const [originalProfileData, setOriginalProfileData] = useState({
+    name: "",
     phone: "",
     gender: "",
     dateOfBirth: "",
@@ -77,6 +78,7 @@ const PersonalInfo = () => {
       }
 
       const updatedData = {
+        name: profileData.name,
         phone: profileData.phone,
         gender: profileData.gender,
         dob: dobFormatted,
@@ -88,7 +90,7 @@ const PersonalInfo = () => {
       });
 
       // Update original profile to reflect saved changes
-      setOriginalProfileData({ ...profileData });
+      setOriginalProfileData(profileData);
       setIsEditing(false);
       setImagePreview(null);
       
@@ -102,12 +104,12 @@ const PersonalInfo = () => {
   };
 
   const handleProfileChange = (field, value) => {
-    setProfileData((prev) => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value.trimStart() }));
   };
 
   const handleCancel = () => {
     // Restore original values
-    setProfileData({ ...originalProfileData });
+    setProfileData(originalProfileData);
     setIsEditing(false);
     setImagePreview(null);
     toast.info("Changes discarded");
@@ -168,6 +170,8 @@ const PersonalInfo = () => {
         const year = dateObj.getFullYear();
         formattedDate = `${day}/${month}/${year}`;
       }
+      
+      setUser(prevUser => ({ ...prevUser, avatar: data.avatar || prevUser.avatar }));
 
       const profileData = {
         phone: data.phone || "",
@@ -175,13 +179,14 @@ const PersonalInfo = () => {
         dateOfBirth: formattedDate || "",
         wishlist: data.wishlist || [],
         reviews: data.reviews || [],
+        name: data.name || user.name,
       };
 
       setProfileData(profileData);
       setOriginalProfileData(profileData);
     } catch (error) {
       if (error?.response?.status === 404) {
-        const emptyProfile = { phone: "", gender: "", dateOfBirth: "", wishlist: [], reviews: [] };
+        const emptyProfile = { name: user.name, phone: "", gender: "", dateOfBirth: "", wishlist: [], reviews: [] };
         setProfileData(emptyProfile);
         setOriginalProfileData(emptyProfile);
       } else {
@@ -280,11 +285,14 @@ const PersonalInfo = () => {
                 Full Name *
               </label>
               <input
-                type="text"
-                value={user.name}
-                disabled
+                type="text" 
+                value={isEditing ? profileData.name : user.name}
+                disabled={!isEditing}
+                onChange={(e) => handleProfileChange("name", e.target.value)}
                 placeholder="Enter your full name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${
+                  !isEditing ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                }`}
               />
             </div>
             <div>

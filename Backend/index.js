@@ -14,6 +14,7 @@ import wishlistRouter from "./routes/wishlistRoutes.js";
 import addressRouter from "./routes/addressRoutes.js";
 import cartRouter from "./routes/cartRoutes.js";
 import paymentRouter from "./routes/paymentRoutes.js";
+import orderRouter from "./routes/orderRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,7 @@ app.use("/api/wishlist", wishlistRouter);
 app.use("/api/addresses", addressRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/payment", paymentRouter);
+app.use("/api/orders", orderRouter);
 
 app.get("/ping", (req, res) => {
   res.status(200).json({ ok: true });

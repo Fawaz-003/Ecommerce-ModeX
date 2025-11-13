@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../../../Context/AppContext";
-import { Star } from "lucide-react";
+import { Star, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import UserReviewSkeleton from "../../../../Layout/Skeleton/UserReviewSkeleton";
 
@@ -60,7 +60,24 @@ const UserReviews = () => {
   }
 
   if (reviews.length === 0) {
-    return <div className="text-center p-4">You haven't written any reviews yet.</div>;
+    return (
+      <div className="text-center py-16">
+        <Star size={48} className="mx-auto text-yellow-400 mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          No Reviews Yet
+        </h3>
+        <p className="text-gray-600 mb-4">
+          You haven't written any reviews. Share your thoughts on products
+          you've purchased!
+        </p>
+        <Link
+          to="/profile/my-orders"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto w-fit"
+        >
+          <ShoppingBag size={18} /> View Orders to Review
+        </Link>
+      </div>
+    );
   }
 
   return (

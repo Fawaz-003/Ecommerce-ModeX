@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
+import { useAppContext } from "../../../Context/AppContext";
 import Logout from "../../../Components/Logout";
 
 const UserProfile = () => {
@@ -26,26 +27,38 @@ const UserProfile = () => {
     avatar: "",
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const { axios } = useAppContext();
+ 
   useEffect(() => {
-    fetchUserData();
-  }, []);
-  const fetchUserData = async () => {
-    try {
+    const fetchUserData = async () => {
       setLoading(true);
-      const response = localStorage.getItem("user");
-      if (response) {
-        const userData = JSON.parse(response);
-        setUser(userData);
-      } else {
-        console.error("Failed to fetch user data");
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user")) || {};
+        const userId = storedUser._id || storedUser.id;
+ 
+        if (userId) {
+          const profileRes = await axios.get(`/api/profile/${userId}`);
+          const profile = profileRes.data.profile;
+          setUser({
+            ...storedUser,
+            name: profile.name || storedUser.name,
+            avatar: profile.avatar || storedUser.avatar,
+          });
+        } else {
+          setUser(storedUser);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // Fallback to local storage user if profile fetch fails
+        setUser(JSON.parse(localStorage.getItem("user")) || {});
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+ 
+    fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sidebar items: label + route slug + icon
   const menuItems = [
