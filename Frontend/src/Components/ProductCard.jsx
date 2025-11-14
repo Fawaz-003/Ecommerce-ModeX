@@ -1,8 +1,31 @@
 import { useState } from "react";
-import { Heart, IndianRupee, Star, Loader2 } from "lucide-react";
+import { Heart, IndianRupee, Star, Loader2, Truck } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppContext } from "../Context/AppContext";
 import { toast } from "react-toastify";
+
+// Function to calculate expected delivery date (7 days from today)
+const getExpectedDeliveryDate = () => {
+  const today = new Date();
+  const deliveryDate = new Date(today);
+  deliveryDate.setDate(today.getDate() + 7);
+  
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  const dayName = days[deliveryDate.getDay()];
+  const date = deliveryDate.getDate();
+  const month = months[deliveryDate.getMonth()];
+  const year = deliveryDate.getFullYear();
+  
+  return {
+    day: dayName,
+    date: date,
+    month: month,
+    year: year,
+    fullDate: `${dayName}, ${date} ${month} ${year}`
+  };
+};
 
 const ProductCard = ({ product }) => {
   const { wishlist, addToWishlist, removeFromWishlist, user } = useAppContext();
@@ -148,6 +171,13 @@ const handleWishlistClick = async (e) => {
             {price}
           </span>
           {originalPrice && <span className="text-xs sm:text-sm text-gray-400 line-through">₹{originalPrice}</span>}
+        </div>
+
+        {/* Expected Delivery */}
+        <div className="mt-2 flex items-center gap-1.5 text-[10px] sm:text-xs text-green-600">
+          <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <span className="font-medium">Expected Delivery:</span>
+          <span>{getExpectedDeliveryDate().fullDate}</span>
         </div>
       </div>
     </Link>

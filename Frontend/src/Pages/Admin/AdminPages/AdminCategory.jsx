@@ -107,19 +107,19 @@ export default function CategoryListing() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full table-auto">
               <thead>
                 <tr className="bg-gradient-to-r from-slate-50 to-slate-100">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200 w-16">
                     S.No
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200 min-w-[150px]">
                     Category
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200 min-w-[200px]">
                     Subcategories
                   </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                  <th className="px-4 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200 w-48">
                     Actions
                   </th>
                 </tr>
@@ -130,26 +130,26 @@ export default function CategoryListing() {
                     key={cat._id || index}
                     className="hover:bg-slate-50 transition-colors duration-200"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
+                    <td className="px-4 py-4 text-sm font-semibold text-slate-900">
                       {cat.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    <td className="px-4 py-4 text-sm text-slate-600">
                       {cat.subcategory?.length > 0
                         ? cat.subcategory.join(", ")
                         : "—"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() =>
                             navigate(`/admin/categories/editcategory/${cat._id}`)
                           }
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-xs"
                         >
-                          <Edit3 className="w-4 h-4" />
+                          <Edit3 className="w-3.5 h-3.5" />
                           Edit
                         </button>
                         <div>
@@ -158,9 +158,9 @@ export default function CategoryListing() {
                               setselectedId(cat._id);
                               setisModalOpen(true);
                             }}
-                            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-3 py-1.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-xs"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                             Delete
                           </button>
                           <OpenModel

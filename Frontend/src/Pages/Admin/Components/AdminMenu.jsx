@@ -63,7 +63,7 @@ const AdminMenu = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 lg:ml-64 pt-16">
-          <div className="p-6 md:p-8">
+          <div className="p-4 md:p-6">
             <Outlet />
           </div>
         </main>

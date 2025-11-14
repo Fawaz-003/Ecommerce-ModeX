@@ -1,13 +1,36 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ShieldCheck, ArrowLeft, IndianRupee, UserCheck } from "lucide-react";
+import { ShieldCheck, ArrowLeft, IndianRupee, UserCheck, Truck } from "lucide-react";
 import { useAppContext } from "../Context/AppContext";
-import { getCart, getCartTotal } from "../utils/cartUtils";
+import { getCart, getCartTotal, clearCart } from "../utils/cartUtils";
 import { toast } from "react-toastify";
 import CartSkeleton from "../Layout/Skeleton/CartSkeleton";
 import ProgressBar from "../Components/ProgressBar";
 import AddressStep from "../Components/AddressStep";
 import PaymentStep from "../Components/PaymentStep";
 import AddressModal from "../Components/AddressModal";
+
+// Function to calculate expected delivery date (7 days from today)
+const getExpectedDeliveryDate = () => {
+  const today = new Date();
+  const deliveryDate = new Date(today);
+  deliveryDate.setDate(today.getDate() + 7);
+  
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  const dayName = days[deliveryDate.getDay()];
+  const date = deliveryDate.getDate();
+  const month = months[deliveryDate.getMonth()];
+  const year = deliveryDate.getFullYear();
+  
+  return {
+    day: dayName,
+    date: date,
+    month: month,
+    year: year,
+    fullDate: `${dayName}, ${date} ${month} ${year}`
+  };
+};
 
 const Checkout = () => {
   const { user, axios, navigate } = useAppContext();
@@ -138,8 +161,17 @@ const Checkout = () => {
     }
 
     if (paymentData.paymentMethod === "cod") {
+      // Clear cart for COD orders as well
+      try {
+        await clearCart(axios);
+        localStorage.removeItem('local-cart');
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+      }
+      
       toast.success("Order placed successfully!");
-      navigate("/order-success");
+      navigate("/profile/my-orders");
 
     } else if (paymentData.paymentMethod === "online") {
       // Handle Razorpay online payment
@@ -171,7 +203,21 @@ const Checkout = () => {
             });
 
             if (verificationResponse.data.success) {
-              navigate(`/paymentsuccess?reference=${response.razorpay_payment_id}`);
+              // Clear cart after successful payment
+              try {
+                await clearCart(axios);
+                // Also clear local cart if exists
+                localStorage.removeItem('local-cart');
+                // Dispatch event to update UI
+                window.dispatchEvent(new CustomEvent('cartUpdated'));
+              } catch (error) {
+                console.error("Error clearing cart:", error);
+                // Continue even if cart clearing fails
+              }
+              
+              toast.success("Payment successful! Order placed.");
+              // Navigate to user orders page
+              navigate('/profile/my-orders');
             } else {
               toast.error("Payment verification failed.");
             }
@@ -381,6 +427,19 @@ const Checkout = () => {
                       <IndianRupee className="w-5 h-5" />
                       {total.toFixed(2)}
                     </span>
+                  </div>
+                </div>
+
+                {/* Expected Delivery */}
+                <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Truck className="w-4 h-4 text-green-600" />
+                    <div>
+                      <p className="text-xs text-gray-600 font-medium">Expected Delivery</p>
+                      <p className="text-sm font-semibold text-green-700">
+                        {getExpectedDeliveryDate().fullDate}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
