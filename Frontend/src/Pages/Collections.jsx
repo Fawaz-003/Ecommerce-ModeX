@@ -1,6 +1,7 @@
 import MobileFilter from "../Layout/MobileFilter";
 import MobileSort from "../Layout/MobileSort";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, Filter, ChevronRight } from "lucide-react";
 import ProductCard from "../Components/ProductCard";
 import ProductCardSkeleton from "../Layout/Skeleton/ProductCardSkeleton.jsx";
@@ -15,10 +16,21 @@ const Collections = () => {
   const [showSort, setShowSort] = useState(false);
   const [availableCategories, setAvailableCategories] = useState([]);
   const { axios, user } = useAppContext();
+  const location = useLocation();
 
   const { filteredProducts, filters, filterSetters, clearAllFilters } = useProductFilters(allProducts);
   const { priceRanges, selectedPriceRanges, categories, selectedCategories, brands, selectedBrands, showInStockOnly, minRating, searchQuery, sortBy } = filters;
   const { togglePriceRange, toggleCategory, toggleBrand, setShowInStockOnly, setMinRating, setSearchQuery, setSortBy } = filterSetters;
+
+  // Effect to sync search query from URL to the filter state
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchFromUrl = params.get('search');
+    // Only update if the URL search term is different from the current state
+    if (searchFromUrl && searchFromUrl !== searchQuery) {
+      setSearchQuery(searchFromUrl);
+    }
+  }, [location.search, searchQuery, setSearchQuery]);
 
   useEffect(() => {
     const fetchProductsAndCategories = async () => {

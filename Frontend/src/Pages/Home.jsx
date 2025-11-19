@@ -3,8 +3,6 @@ import Template1 from "../Layout/HomeTemplates/Template1";
 import Template2 from "../Layout/HomeTemplates/Template2";
 import Template3 from "../Layout/HomeTemplates/Template3";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-// Import your existing SearchBar component
-import SearchBar from "../Components/SearchBar";
 
 // 🔹 Import CategoriesItem component
 import CategoryBar from "../Layout/Sections/CategoryBar";
@@ -122,10 +120,6 @@ const Home = () => {
 
   return (
     <div className="w-full bg-[#f1f3f6]">
-      {/* 🔹 SearchBar with padding */}
-      <div className="bg-[#f1f3f6]">
-        <SearchBar />
-      </div>
 
       {/* 🔹 Main Carousel */}
       <div
