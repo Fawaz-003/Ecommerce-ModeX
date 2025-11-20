@@ -27,23 +27,23 @@ const CategoriesItem = [
 
 const CategoryBar = () => {
   return (
-    <div className="bg-white shadow-lg rounded-lg">
+    <div className="bg-white shadow-md rounded-lg">
       <div className="max-w-7xl mx-auto px-4 py-3">
         {/* Grid layout that adapts to screen size */}
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 gap-4 sm:gap-6">
           {CategoriesItem.map((cat, index) => (
             <div
               key={index}
               className="flex flex-col items-center cursor-pointer group"
             >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 flex items-center justify-center">
+              <div className="w-10 h-10 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-15 lg:h-15 flex items-center justify-center">
                 <img
                   src={cat.img}
                   alt={cat.name}
                   className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-200"
                 />
               </div>
-              <span className="text-xs sm:text-sm md:text-base font-medium mt-2 text-gray-800 text-center leading-tight">
+              <span className="text-xs sm:text-sm md:text-base font-medium lg:text-sm mt-2 text-gray-800 text-center leading-tight">
                 {cat.name}
               </span>
             </div>

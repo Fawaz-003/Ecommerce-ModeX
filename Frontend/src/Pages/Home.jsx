@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
-import Template1 from "../Layout/HomeTemplates/Template1";
-import Template2 from "../Layout/HomeTemplates/Template2";
-import Template3 from "../Layout/HomeTemplates/Template3";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import CarouselSlide from "../Layout/HomeTemplates/CarouselSlide";
+import CarouselSkeleton from "../Layout/HomeTemplates/CarouselSkeleton";
+import { fetchSlides } from "../utils/carousel"; // Import the fetchSlides utility
 // 🔹 Import CategoriesItem component
 import CategoryBar from "../Layout/Sections/CategoryBar";
-import DiscountCards from "../Layout/Sections/CardTemplates";
-import LatestCollections from "../Layout/Sections/LatestCollections";
+import TopRatedCollections from "../Layout/Sections/TopRatedCollections";
+import RecentlyViewed from "../Layout/Sections/RecentlyViewed";
+import ProductShowcase from "../Layout/Sections/ProductShowcase";
+import { useAppContext } from "../Context/AppContext";
 
 const Home = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [carouselSlides, setCarouselSlides] = useState([]);
+  const [loadingCarousel, setLoadingCarousel] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0); // This will now index into carouselSlides
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [progress, setProgress] = useState(0);
   const autoScrollIntervalRef = useRef(null);
@@ -22,6 +26,15 @@ const Home = () => {
   const containerRef = useRef(null);
 
   const [isMobile, setIsMobile] = useState(false);
+
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loadingRelated, setLoadingRelated] = useState(true);
+  const [errorRelated, setErrorRelated] = useState(null);
+  const [mostRecentViewed, setMostRecentViewed] = useState(null);
+  const { axios } = useAppContext();
 
   // Check if mobile screen size
   useEffect(() => {
@@ -35,11 +48,73 @@ const Home = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const templates = [
-    { id: 1, component: <Template1 /> },
-    { id: 2, component: <Template2 /> },
-    { id: 3, component: <Template3 /> },
-  ];
+  useEffect(() => {
+    const getCarouselSlides = async () => {
+      try {
+        setLoadingCarousel(true);
+        const data = await fetchSlides();
+        setCarouselSlides(data);
+      } catch (error) {
+        console.error("Error fetching carousel slides:", error);
+      } finally {
+        setLoadingCarousel(false);
+      }
+    };
+    getCarouselSlides();
+  }, []);
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get("/api/products/list");
+        const featured = res.data.products.filter((p) => p.isfeatured === true);
+        setFeaturedProducts(featured.slice(0, 4)); // Get first 4 featured products
+      } catch (err) {
+        console.error("Failed to fetch featured products:", err);
+        setError("Could not load featured products.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, [axios]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      setLoadingRelated(true);
+      setErrorRelated(null);
+      try {
+        const recentlyViewed =
+          JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+        if (recentlyViewed.length === 0) {
+          setRelatedProducts([]);
+          setLoadingRelated(false);
+          return;
+        }
+
+        const mostRecentItem = recentlyViewed[0];
+        setMostRecentViewed(mostRecentItem);
+
+        const res = await axios.get("/api/products/list");
+        const allProducts = res.data.products || [];
+
+        const related = allProducts.filter(
+          (p) => p.subcategory === mostRecentItem.subcategory
+        );
+
+        setRelatedProducts(related.slice(0, 4)); // Get first 4 related products
+      } catch (err) {
+        console.error("Failed to fetch related products:", err);
+        setErrorRelated("Could not load related products.");
+      } finally {
+        setLoadingRelated(false);
+      }
+    };
+
+    fetchRelatedProducts();
+  }, [axios]);
+
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -64,16 +139,16 @@ const Home = () => {
   // Auto-scroll functionality
   useEffect(() => {
     if (isAutoScrolling) {
-      autoScrollIntervalRef.current = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % templates.length);
+      autoScrollIntervalRef.current = carouselSlides.length > 0 && setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
       }, 5000); // Change slide every 5 seconds
     }
     return () => {
       if (autoScrollIntervalRef.current) {
         clearInterval(autoScrollIntervalRef.current);
-      }
+      } // Clear interval when component unmounts or dependencies change
     };
-  }, [isAutoScrolling, templates.length]);
+  }, [isAutoScrolling, carouselSlides.length]);
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
@@ -85,12 +160,12 @@ const Home = () => {
 
   const goToPrevious = () => {
     const newSlide =
-      currentSlide === 0 ? templates.length - 1 : currentSlide - 1;
+      currentSlide === 0 ? carouselSlides.length - 1 : currentSlide - 1;
     goToSlide(newSlide);
   };
 
   const goToNext = () => {
-    const newSlide = (currentSlide + 1) % templates.length;
+    const newSlide = (currentSlide + 1) % carouselSlides.length;
     goToSlide(newSlide);
   };
 
@@ -119,96 +194,115 @@ const Home = () => {
   };
 
   return (
-    <div className="w-full bg-[#f1f3f6]">
+    <div className="w-full bg-[#e8ecf0]">
+      <div className="py-4 xl:px-10">
+        <CategoryBar />
+      </div>
 
-      {/* 🔹 Main Carousel */}
-      <div
-        ref={containerRef}
-        className="relative lg:w-[70%] overflow-hidden h-[67vh] lg:h-[60vh] px-3 lg:px-8 rounded-lg lg:rounded-2xl"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <div className="relative lg:w-full overflow-hidden h-[67vh] lg:h-[60vh] lg:px-8 rounded-lg lg:rounded-2xl">
-          {templates.map((template, index) => (
-            <div
-              key={template.id}
-              className={`absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out ${
-                index === currentSlide ? "translate-x-0" : "translate-x-full"
-              }`}
-              style={{
-                transform:
-                  index === currentSlide
-                    ? "translateX(0)"
-                    : index < currentSlide
-                    ? "translateX(-100%)"
-                    : "translateX(100%)",
-              }}
-            >
-              <div className="w-full h-full overflow-hidden">
-                {template.component}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Navigation buttons - Hidden on mobile */}
-        <button
-          onClick={goToPrevious}
-          className="hidden md:block absolute left-14 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
-          aria-label="Previous slide"
+      <div className="flex w-[100%] lg:px-10 gap-4">
+        {/* 🔹 Main Carousel */}
+        <div
+          ref={containerRef}
+          className="relative lg:w-[67%] overflow-hidden h-[67vh] lg:h-[50vh] rounded-lg mb-5"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
-          <ChevronLeft size={24} />
-        </button>
+          <div className="relative lg:w-full overflow-hidden h-[67vh] lg:h-[50vh] lg:px-8 rounded-lg">
+            {loadingCarousel ? (
+              <CarouselSkeleton />
+            ) : carouselSlides.length > 0 ? (
+              carouselSlides.map((slide, index) => (
+                <div
+                  key={slide._id} // Use _id from MongoDB
+                  className={`absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out ${
+                    index === currentSlide ? "translate-x-0" : "translate-x-full"
+                  }`}
+                  style={{
+                    transform:
+                      index === currentSlide
+                        ? "translateX(0)"
+                        : index < currentSlide
+                        ? "translateX(-100%)"
+                        : "translateX(100%)",
+                  }}
+                >
+                  <div className="w-full h-full overflow-hidden">
+                    <CarouselSlide {...slide} />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center w-full h-full text-gray-500">No carousel slides available.</div>
+            )}
+          </div>
 
-        <button
-          onClick={goToNext}
-          className="hidden md:block absolute right-14 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
-          aria-label="Next slide"
-        >
-          <ChevronRight size={24} />
-        </button>
+          {/* Navigation buttons - Hidden on mobile */}
+          <button
+            onClick={goToPrevious}
+            className="hidden md:block absolute left-14 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
 
-        {/* Progress bars - Hidden on mobile */}
-        <div className="hidden md:flex absolute bottom-5 left-1/2 transform -translate-x-1/2 space-x-1 z-20">
-          {templates.map((_, index) => (
-            <div
-              key={index}
-              className={`h-1.5 bg-gray-300 rounded-full overflow-hidden transition-all duration-200 ${
-                index === currentSlide ? "w-10" : "w-4"
-              }`}
-            >
+          <button
+            onClick={goToNext}
+            className="hidden md:block absolute right-14 top-1/2 transform -translate-y-1/2 z-20 bg-white/50 hover:bg-white/60 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} />
+          </button>
+
+          {/* Progress bars - Hidden on mobile */}
+          <div className="hidden md:flex absolute bottom-5 left-1/2 transform -translate-x-1/2 space-x-1 z-20">
+            {carouselSlides.map((_, index) => (
               <div
-                className={`h-full rounded-full transition-all duration-50 ${
-                  index === currentSlide ? "bg-[#415a77]" : "bg-gray-100"
+                key={index}
+                className={`h-1.5 bg-gray-300 rounded-full overflow-hidden transition-all duration-200 ${
+                  index === currentSlide ? "w-10" : "w-4"
                 }`}
-                style={{
-                  width: index === currentSlide ? `${progress}%` : "0%",
-                }}
-              />
-            </div>
-          ))}
+              >
+                <div
+                  className={`h-full rounded-full transition-all duration-50 ${
+                    index === currentSlide ? "bg-[#0c071b]" : "bg-gray-100"
+                  }`}
+                  style={{
+                    width: index === currentSlide ? `${progress}%` : "0%",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-4 h-[50vh] w-[33%]">
+          <div className="bg-pink-500 w-full h-full rounded-md">Banner 1</div>
+          <div className="bg-orange-500 w-full h-full rounded-md">Banner 2</div>
         </div>
       </div>
 
       {/* 🔹 CategoriesItem placed after the carousel */}
-      <div>
-        <LatestCollections />
-      </div>
-      <div className="px-3 py-5 xl:px-10 bg-[#e8ecf0]">
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 lg:py-2">
-          <div className="h-[1px] sm:h-[1.2px] bg-gray-300 flex-1 max-w-[50px] sm:max-w-none"></div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-800 tracking-wide sm:tracking-wider px-2">
-            CATEGORIES
-          </h1>
-          <div className="h-[1px] sm:h-[1.2px] bg-gray-300 flex-1 max-w-[50px] sm:max-w-none"></div>
+      <div className="grid grid-cols gap-6">
+        <TopRatedCollections />
+        <div className="w-full grid grid-cols-3 lg:px-10 gap-4">
+          <ProductShowcase
+            products={featuredProducts}
+            loading={loading}
+            error={error}
+            title="Featured Products"
+            link="/collections?filter=featured"
+          />
+          {relatedProducts.length > 0 && (
+            <ProductShowcase
+              products={relatedProducts}
+              loading={loadingRelated}
+              error={errorRelated}
+              title="Related to Viewed"
+              link={`/collections?search=${mostRecentViewed?.subcategory}`}
+            />
+          )}
         </div>
-        <CategoryBar />
-      </div>
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 px-4 sm:px-6 lg:px-10 py-3 sm:py-5">
-        <DiscountCards />
-        <DiscountCards />
-        <DiscountCards />
+        <RecentlyViewed />
       </div>
     </div>
   );

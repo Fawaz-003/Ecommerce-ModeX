@@ -15,6 +15,7 @@ const Collections = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [availableCategories, setAvailableCategories] = useState([]);
+  const [pageTitle, setPageTitle] = useState("All Collections");
   const { axios, user } = useAppContext();
   const location = useLocation();
 
@@ -26,34 +27,66 @@ const Collections = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const searchFromUrl = params.get('search');
+    const filterFromUrl = params.get('filter');
+
     // Only update if the URL search term is different from the current state
-    if (searchFromUrl && searchFromUrl !== searchQuery) {
+    if (searchFromUrl) {
       setSearchQuery(searchFromUrl);
+    } else if (filterFromUrl === 'top-rated') {
+      // Set the minimum rating filter to 4
+      setMinRating(4);
+      setSortBy('rating'); // Also sort by highest rated
+      setPageTitle("Top Rated Products");
+      // Clear search query if navigating from a search to a filter
+      if (searchQuery) setSearchQuery('');
+
+    } else if (filterFromUrl === 'featured') {
+      // This is the new logic to handle featured products
+      setSearchQuery('[featured]'); // Use a special query to identify the filter
+      setPageTitle("Featured Products");
+      // Clear other filters that might conflict
+      setMinRating(0);
     }
   }, [location.search, searchQuery, setSearchQuery]);
 
   useEffect(() => {
     const fetchProductsAndCategories = async () => {
       try {
+        const params = new URLSearchParams(location.search);
+        const filterFromUrl = params.get('filter');
+
         setLoading(true);
-        const [productRes, categoryRes] = await Promise.all([
-          axios.get("/api/products/list"),
-          axios.get("/api/category/list"),
-        ]);
 
-        const productList = productRes.data.products || [];
-        const categoryList = categoryRes.data.categories || [];
+        if (filterFromUrl === 'recently-viewed') {
+          const recentlyViewedProducts = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
+          setAllProducts(recentlyViewedProducts);
+          setAvailableCategories([]); // No categories needed for this view
+          setPageTitle("Recently Viewed Products");
+        } else {
+          const [productRes, categoryRes] = await Promise.all([
+            axios.get("/api/products/list"),
+            axios.get("/api/category/list"),
+          ]);
 
-        const productsWithCategoryName = productList.map((product) => {
-          const category = categoryList.find((c) => c._id === product.category);
-          return {
-            ...product,
-            categoryName: category ? category.name : "Uncategorized",
-          };
-        });
+          const productList = productRes.data.products || [];
+          const categoryList = categoryRes.data.categories || [];
 
-        setAllProducts(productsWithCategoryName);
-        setAvailableCategories(categoryList);
+          const productsWithCategoryName = productList.map((product) => {
+            const category = categoryList.find((c) => c._id === product.category);
+            return {
+              ...product,
+              categoryName: category ? category.name : "Uncategorized",
+            };
+          });
+
+          setAllProducts(productsWithCategoryName);
+          setAvailableCategories(categoryList);
+          if (filterFromUrl === 'featured') {
+            setPageTitle("Featured Products");
+          } else if (filterFromUrl !== 'top-rated') {
+            setPageTitle("All Collections");
+          }
+        }
       } catch (err) {
         console.error(err);
         setError("Failed to load products");
@@ -63,7 +96,7 @@ const Collections = () => {
     };
 
     fetchProductsAndCategories();
-  }, [axios]);
+  }, [axios, location.search]);
 
   const openMobileFilter = () => {
     setIsMobileFilterOpen(true);
@@ -74,6 +107,13 @@ const Collections = () => {
     setIsMobileFilterOpen(false);
     setHideBottomNavForFilter(false);
   };
+
+  // Override filteredProducts for the special '[featured]' case
+  const finalFilteredProducts =
+    searchQuery === "[featured]"
+      ? allProducts.filter((p) => p.isfeatured)
+      : filteredProducts;
+
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -235,6 +275,9 @@ const Collections = () => {
 
         {/* Sort Section */}
         <div className="mb-6 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800 hidden lg:block">
+            {pageTitle}
+          </h1>
           {/* Desktop Sort */}
           <div className="hidden sm:flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -252,7 +295,7 @@ const Collections = () => {
             </div>
           </div>
           <p className="text-sm text-gray-500">
-            Showing {filteredProducts.length} results
+            Showing {finalFilteredProducts.length} results
           </p>
 
           {/* ✅ Mobile Sort Component */}
@@ -274,13 +317,13 @@ const Collections = () => {
             </div>
           )}
 
-          {!loading && !error && filteredProducts.map((product) => (
+          {!loading && !error && finalFilteredProducts.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
         </div>
 
         {/* No Results */}
-        {filteredProducts.length === 0 && (
+        {!loading && !error && finalFilteredProducts.length === 0 && (
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
               <Search className="text-gray-400" size={32} />
@@ -323,10 +366,10 @@ const Collections = () => {
         )}
 
         {/* Footer */}
-        {filteredProducts.length > 0 && (
+        {finalFilteredProducts.length > 0 && (
           <div className="mt-12 text-center">
             <p className="text-gray-500 text-sm">
-              Showing {filteredProducts.length} of {allProducts.length} products
+              Showing {finalFilteredProducts.length} of {allProducts.length} products
             </p>
           </div>
         )}
