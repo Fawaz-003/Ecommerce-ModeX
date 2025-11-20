@@ -57,6 +57,24 @@ const ProductDetail = () => {
     }
   };
 
+  // Effect to handle recently viewed products
+  useEffect(() => {
+    if (fetchProduct) {
+      const recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+      
+      // Remove the product if it already exists to move it to the front
+      const updatedViewed = recentlyViewed.filter(item => item._id !== fetchProduct._id);
+
+      // Add the current product to the beginning of the array
+      updatedViewed.unshift(fetchProduct);
+
+      // Keep only the latest 10 viewed products
+      const finalViewed = updatedViewed.slice(0, 10);
+
+      localStorage.setItem("recentlyViewed", JSON.stringify(finalViewed));
+    }
+  }, [fetchProduct]);
+
   useEffect(() => {
     if (selectedColor && selectedSize && fetchProduct?.variant?.length) {
       const match = fetchProduct.variant.find(

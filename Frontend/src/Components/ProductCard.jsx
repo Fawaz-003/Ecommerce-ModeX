@@ -23,7 +23,7 @@ const getExpectedDeliveryDate = () => {
     date: date,
     month: month,
     year: year,
-    fullDate: `${dayName}, ${date} ${month} ${year}`
+    fullDate: `${date} ${month} ${year}`
   };
 };
 
@@ -174,7 +174,7 @@ const handleWishlistClick = async (e) => {
         </div>
 
         {/* Expected Delivery */}
-        <div className="mt-2 flex items-center gap-1.5 text-[10px] sm:text-xs text-gray-600">
+        <div className="flex items-center gap-1 text-[8px] sm:text-xs lg:text-[12px] text-gray-600">
           <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           <span className="font-medium">Expected Delivery:</span>
           <span>{getExpectedDeliveryDate().fullDate}</span>

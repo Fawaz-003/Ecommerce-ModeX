@@ -36,6 +36,7 @@ import AdminSettings from "./Pages/Admin/AdminPages/AdminSettings";
 import AdminCategory from "./Pages/Admin/AdminPages/AdminCategory";
 import AddCategory from "./Pages/Admin/Actions/AddCategory";
 import EditCategory from "./Pages/Admin/Actions/EditCategory";
+import ManageCarousel from "./Pages/Admin/AdminPages/ManageCarousel";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -123,6 +124,7 @@ const App = () => {
             <Route path="addcategory" element={<AddCategory />} />
             <Route path="editcategory/:id" element={<EditCategory />} />
           </Route>
+          <Route path="carousel" element={<ManageCarousel />} />
         </Route>
 
         {/* fallback */}

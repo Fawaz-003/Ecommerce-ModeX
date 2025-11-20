@@ -40,15 +40,20 @@ const AdminSidebar = () => {
       icon: ShoppingBag,
     },
     {
+      name: "Categories",
+      path: "categories",
+      icon: BookCopy,
+    },
+    {
+      name: "Carousel",
+      path: "carousel",
+      icon: BookCopy,
+    },
+    {
       name: "Settings",
       path: "settings",
       icon: Settings,
     },
-    {
-      name: "Categories",
-      path: "categories",
-      icon: BookCopy,
-    }
   ];
 
   const isActiveLink = (path) => {
