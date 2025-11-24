@@ -203,7 +203,7 @@ const Home = () => {
         {/* 🔹 Main Carousel */}
         <div
           ref={containerRef}
-          className="relative lg:w-[67%] overflow-hidden h-[67vh] lg:h-[50vh] rounded-lg mb-5"
+          className="relative lg:w-[75%] overflow-hidden h-[67vh] lg:h-[50vh] rounded-lg mb-5"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -275,9 +275,8 @@ const Home = () => {
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-4 h-[50vh] w-[33%]">
+        <div className="flex flex-col gap-4 h-[50vh] w-[30%]">
           <div className="bg-pink-500 w-full h-full rounded-md">Banner 1</div>
-          <div className="bg-orange-500 w-full h-full rounded-md">Banner 2</div>
         </div>
       </div>
 

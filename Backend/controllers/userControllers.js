@@ -4,10 +4,9 @@ import jwt from "jsonwebtoken";
 import userModel from "../models/userModels.js";
 
 const createToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ id, role }, process.env.JWT_SECRET);
 };
 
-// Function to generate avatar from user initials
 const generateAvatarFromInitials = (name) => {
   if (!name) return `https://ui-avatars.com/api/?name=User&background=random`;
   
@@ -15,10 +14,8 @@ const generateAvatarFromInitials = (name) => {
   let initials = "";
   
   if (nameParts.length === 1) {
-    // Single name: take first letter
     initials = nameParts[0].charAt(0).toUpperCase();
   } else {
-    // Multiple names: take first letter of first and last name
     initials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   }
   
@@ -53,7 +50,6 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Generate avatar from initials if not already set (for email/password users)
     if (!user.avatar) {
       user.avatar = generateAvatarFromInitials(user.name);
       await user.save();
@@ -121,9 +117,7 @@ const registerUser = async (req, res) => {
       role = 1;
     }
 
-    // Generate avatar from initials for new email/password users
     const avatar = generateAvatarFromInitials(name);
-
     const newUser = new userModel({
       name,
       email,
